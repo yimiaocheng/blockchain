@@ -26,7 +26,11 @@ public class AppApplication {
     public MapperScannerConfigurer mapperScannerConfigurer(){
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setBasePackage("com.cwt.persistent.mapper");
+        System.out.println("sss");
         return mapperScannerConfigurer;
+
+
+
     }
 
     @Bean

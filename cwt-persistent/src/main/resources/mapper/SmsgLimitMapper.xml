@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.SmsgLimitMapper">
+	<resultMap id="SmsgLimitMap" type="com.cwt.domain.dto.user.SmsgLimitDto">
+		<id property="id" column="id"/>
+		<result property="mobilephone" column="mobilephone"/>
+		<result property="smsgCount" column="smsg_count"/>
+		<result property="smsgDate" column="smsg_date"/>
+	</resultMap>
+
+	<select id="selectCountByMobilePhone" resultMap="SmsgLimitMap" parameterType="java.lang.String">
+		SELECT mobilephone,smsg_count,smsg_date FROM app_smsg_limit WHERE mobilephone = #{mobilephone} AND DATEDIFF(NOW(), smsg_date) = 0
+	</select>
+
+	<update id="addSmsgCount" parameterType="java.lang.String">
+		UPDATE app_smsg_limit SET  smsg_count = smsg_count+1 WHERE mobilephone = #{mobilephone} AND DATEDIFF(NOW(), smsg_date) = 0
+	</update>
+
+</mapper>

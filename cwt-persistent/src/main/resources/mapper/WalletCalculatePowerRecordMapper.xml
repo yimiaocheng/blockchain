@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.WalletCalculatePowerRecordMapper">
+    <resultMap id="WalletCalculatePowerRecordMap"
+               type="com.cwt.domain.dto.wallet.WalletCalculatePowerRecordDto">
+        <id property="id" column="id"/>
+        <result property="eventId" column="event_id"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+        <result property="changeType" column="change_type"/>
+        <result property="optUserShowMsg" column="opt_user_show_msg"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="optUserId" column="opt_user_id"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+    </resultMap>
+
+    <resultMap id="GetBillMap" type="com.cwt.domain.dto.wallet.GetBillDto">
+        <result property="userName" column="user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="CalculatePowerListMap" type="com.cwt.domain.dto.calculate.CalculatePowerListDto">
+        <result property="targetUserName" column="target_user_name"/>
+        <result property="sourceUserName" column="source_user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="changeType" column="change_type"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="CalculatePowerRecordMap" type="com.cwt.domain.dto.wallet.CalculatePowerRecordDto">
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+        <result property="changeType" column="change_type"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+    </resultMap>
+
+    <insert id="saveWeightingAwardBill">
+		 INSERT INTO app_wallet_calculate_power_record
+		 (id, target_user_id, opt_user_id, amount, arithmetic_type, change_type, create_time )
+         SELECT
+         UUID( ),
+         user_id,
+         user_id,
+         #{award} as amount,
+         1,
+         5,
+         NOW( )
+         FROM
+            app_wallet
+         WHERE
+	        calculation_force &gt;= (SELECT MAX(min_upgrade) FROM app_grade )
+	</insert>
+
+    <select id="selectToday" resultType="java.math.BigDecimal">
+		SELECT SUM(amount) FROM app_wallet_calculate_power_record WHERE TO_DAYS( NOW( ) ) - TO_DAYS(create_time) &lt;= 1 AND arithmetic_type = 1;
+    </select>
+
+    <select id="selectRecommendAwardBill" resultMap="GetBillMap">
+        SELECT
+            opt_user_show_msg as user_name,
+            amount,
+            create_time
+        FROM
+            app_wallet_calculate_power_record
+        WHERE
+            target_user_id = #{userId}
+            AND arithmetic_type = 1
+            AND change_type = 4
+            AND event_id IS NOT NULL
+    </select>
+
+
+    <select id="listByCondition" resultMap="CalculatePowerListMap" parameterType="com.cwt.domain.dto.calculate.CalculatePowerListConditionDto">
+        SELECT
+            u.user_name target_user_name,
+            t.opt_user_show_msg source_user_name,
+            t.arithmetic_type arithmetic_type,
+            t.amount * t.arithmetic_type amount,
+            t.change_type,
+          t.create_time
+        FROM
+            app_wallet_calculate_power_record t
+        left join app_user u on t.target_user_id = u.id
+        <where>
+            <if test="telephone != null and telephone !=''">
+                u.user_name = #{telephone}
+            </if>
+            <if test="arithmeticType != null and arithmeticType != ''">
+                and t.arithmetic_type = #{arithmeticType}
+            </if>
+            <if test="changeType != null">
+                and t.change_type = #{changeType}
+            </if>
+            <if test="beginTime != null">
+                and t.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and t.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertAutoFreeBalanceRecord">
+        INSERT INTO app_wallet_calculate_power_record (
+        id,
+        target_user_id,
+        amount,
+        arithmetic_type,
+        change_type,
+        create_time
+        ) SELECT
+        UUID(),
+        w.user_id,
+        w.calculation_force * g.auto_transfer amount,
+        - 1,
+        6,
+        NOW()
+        FROM
+        app_wallet w,
+        app_grade g
+        WHERE
+        w.calculation_force &gt;= g.min_upgrade
+        AND w.calculation_force &lt; g.max_upgrade
+    </insert>
+
+    <select id="listAll" resultMap="CalculatePowerRecordMap">
+        SELECT
+            t.target_user_id,
+            t.amount,
+            t.arithmetic_type,
+            t.change_type,
+            t.create_time
+        FROM
+	        app_wallet_calculate_power_record t
+        WHERE
+	        t.target_user_id = #{userId}
+	    ORDER BY t.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>注册</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" type="text/css" href="lib/css/mui.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/css/app.css"/>
+    <link rel="stylesheet" type="text/css" href="css/login/register.css"/>
+    <script type="text/javascript" src="lib/js/mui.min.js"></script>
+</head>
+<body>
+<!--
+<header class="mui-bar mui-bar-nav">
+    <a class="mui-action-back mui-icon app-icon mui-pull-left"></a>
+    <h1 class="mui-title">注册</h1>
+</header> -->
+<div class="mui-content">
+    <div class="app-ethereum">
+        <img src="./img/logo.png" style="width: 50px;height: 50px;margin: 20px 0px;"/>
+    </div>
+    <div class="app-content-header">
+        <div class="app-content-header-body">
+            <div class="app-content-header-mine">
+                <div class="transfer-input-group mui-input-group">
+                    <div class="transfer-input-row mui-input-row">
+                        <label class="mui-icon app-icon icon-phone"></label>
+                        <input id="userName" placeholder="请输入手机号" type="tel" class="mui-input-clear">
+                    </div>
+                    <div class="app-tel-code transfer-input-row mui-input-row">
+                        <label class="mui-icon app-icon icon-tel-code"></label>
+                        <input id="phoneCode" placeholder="请输入验证码" type="number" class="mui-input-clear">
+                        <div class="app-get-tel-code">
+                            <div id="sendPhoneCode">获取验证码</div>
+                        </div>
+                    </div>
+                    <div class="transfer-input-row mui-input-row">
+                        <label class="mui-icon app-icon icon-password"></label>
+                        <input id="password" placeholder="请输入8-20位密码" type="password" class="mui-input-password">
+                    </div>
+                    <div class="transfer-input-row mui-input-row">
+                        <label class="mui-icon app-icon icon-password"></label>
+                        <input id="qrPassword" placeholder="请确认密码" type="password" class="mui-input-password">
+                    </div>
+                    <div class="transfer-input-row mui-input-row">
+                        <label class="mui-icon app-icon icon-register-code"></label>
+                        <input id="inviterCode" readonly type="text" class="mui-input">
+                    </div>
+                    <p style="margin: 0 10%; font-size: 12px; color: red;">注：注册的手机号即为默认的支付密码，请登录后自行修改</p>
+                    <div class="app-register-agree mui-input-row mui-radio mui-left" style="margin-top:10px;">
+                        <input id="agreeRadio" name="radio1" type="radio">
+                        <label><span>我已经仔细阅读并同意</span><span id="ptfwxy">平台服务协议</span></label>
+                    </div>
+                </div>
+                <div class="transfer-next-group">
+                    <input id="registerBtn" type="button" value="注册">
+                    <label class="download-tips"><span>还没有CT？</span><span id="downloadApp">立即下载APP！</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+
+<script>
+    /**
+     * 解析 URL 参数
+     * http://localhost:8080/?id=123&key=vaule#/restaurant/seller
+     * "?id=123&key=vaule"
+     * {id: "123", key: "vaule"}
+     */
+    function urlParse(url = window.location.search) {
+        // window.location.href 当前文件的绝对地址
+        // window.location.search 当前文件的哈希地址
+        let obj = {}
+        let reg = /[?&][^?&]+=[^?&]+/g
+        let arr = url.match(reg) // ["?id=123", "&key=vaule"]
+
+        if (arr) {
+            arr.forEach(item => {
+                // 删除 ? 和 &，以 = 为标志分割数组
+                let tempArr = item.substring(1).split('=') // ["id", "123"]  ["key", "vaule"]
+                // 使用 decodeURIComponent() 对编码后的 URI 进行解码
+                let key = decodeURIComponent(tempArr[0])
+                let value = decodeURIComponent(tempArr[1])
+                obj[key] = value
+            })
+        }
+        return obj
+    }
+
+    var requestObj = urlParse();
+    var invitationCodeText = requestObj.ic;
+    //var inviterIdText = requestObj.inviterId;
+
+    document.getElementById("inviterCode").value = invitationCodeText;
+    //document.getElementById("inviterId-hide").value = inviterIdText;
+
+</script>
+
+
+<script>
+    var domain = document.domain;
+    var baseUrl = "http://" + domain;
+    var urlData = null;//存放请求后台的下载地址数据
+    console.log(baseUrl);
+    //请求后台获取下载app的地址
+    checkNewestVersion();
+    //获取验证码
+    document.getElementById("sendPhoneCode").addEventListener('tap', function () {
+        var userName = document.getElementById("userName").value;
+        if (!/^1[3-9]\d{9}$/.test(userName)) {
+            mui.alert("手机号格式不正确");
+            return false;
+        }
+
+        if (this.getAttribute("disabled") != "true") {  //倒计时已经完成
+            countDown(this, 2 * 60); //倒计时2分钟
+
+            mui.ajax(baseUrl + "/cwt/login/getSmsgCode", {  //获取验证码
+                data: {
+                    "mobilePhone": userName
+                },
+//					async:false,
+                dataType: 'json',//服务器返回json格式数据
+                type: "post",//HTTP请求类型
+                timeout: 10000,//超时时间设置为10秒；
+                success: function (smsgData) {
+                    console.log(JSON.stringify(smsgData));
+                    if (smsgData.code !== "200") {  //获取失败，或者今日超过10条
+                        mui.alert(smsgData.msg);
+                    } else {
+                        document.getElementById("phoneCode").value = "888888";
+                    }
+                },
+                error: function (xhr, type, errorThrown) {
+                    mui.toast("网络异常，请检查网络状态");
+                }
+            });
+        } else {
+            console.log(222);
+        }
+    });
+
+    //倒计时
+    function countDown(obj, time) {
+        //开始判断倒计时是否为0
+        if (time == 0) {
+            obj.removeAttribute("disabled");
+            obj.innerText = "重新获取";
+            return false;
+        } else {
+            obj.setAttribute("disabled", true);
+            obj.innerText = "倒计时" + time + "秒";
+            time--;
+        }
+        //过1秒后执行倒计时函数
+        setTimeout(function () {
+            countDown(obj, time);
+        }, 1000);
+    }
+
+
+    //注册
+    document.getElementById('registerBtn').addEventListener('tap', function () {
+        var userName = document.getElementById("userName").value;
+        var phoneCode = document.getElementById("phoneCode").value;
+        var password = document.getElementById("password").value;
+        var qrPassword = document.getElementById("qrPassword").value;
+        //var inviterId = document.getElementById("inviterId").value.match(/\d+/)[0];
+        var inviterCode = document.getElementById("inviterCode").value;
+
+        if (!/^1[3-9]\d{9}$/.test(userName)) {
+            mui.alert("手机号格式不正确");
+            return false;
+        }
+        if (!/^\d{6}$/.test(phoneCode)) {
+            mui.alert("验证码格式不正确");
+            return false;
+        }
+        if (!/^([a-zA-Z0-9\.\@\!\#\$\%\^\&\*\(\)]){8,20}$/.test(password)) {
+            mui.alert("密码格式不正确");
+            return false;
+        }
+        if (qrPassword !== password) {
+            mui.alert("密码两次输入不一致");
+            return false;
+        }
+        if (!document.getElementById("agreeRadio").checked) {
+            mui.alert("请同意平台服务协议");
+            return false;
+        }
+
+
+        mui.ajax(baseUrl + "/cwt/login/register", {  //请求注册接口
+            data: {
+                "userName": userName,
+                "password": password,
+                "phoneCode": phoneCode,
+                "inviterCode": inviterCode
+            },
+            async: false,
+            dataType: 'json',//服务器返回json格式数据
+            type: "post",//HTTP请求类型
+            timeout: 10000,//超时时间设置为10秒；
+            success: function (registerData) {
+				console.log(JSON.stringify(registerData));
+                if (registerData.code === "200") {  //注册成功
+                    mui.toast("注册成功");
+                    setTimeout(function () {
+                        window.location.href = 'ctapp://' + userName;//打开CT app
+                    },300);
+                } else {
+                    mui.alert(registerData.msg);
+                }
+            },
+            error: function (xhr, type, errorThrown) {
+                mui.toast("网络异常，请检查网络状态");
+            }
+        });
+
+    });
+
+    document.getElementById('ptfwxy').addEventListener('tap', function () {
+        window.location.href = "agreement.html";
+        //mui.toast("敬请期待");
+    });
+    document.getElementById('downloadApp').addEventListener('tap', function () {
+        checkOS();
+    });
+
+    //请求后台获取下载app的地址
+    function checkNewestVersion() {
+        mui.ajax(baseUrl + "/cwt/version/selectNewestVersionAll", {
+            async: false,
+            dataType: 'json', //服务器返回json格式数据
+            timeout: 5000,
+            type: "GET", //HTTP请求类型
+            success: function (data) {
+                //如果请求数据为空
+                if (!data.data) {
+                    return;
+                }
+                urlData = data.data;
+            },
+            error: function (xhr, type, errorThrown) {
+                //mui.alert("当前网络状况不佳，请刷新重试！", "提示");
+            }
+        });
+    }
+
+    function checkOS() {
+        //安卓新版本下载地址
+        var apkurl = baseUrl + "/cwt/files/download/";
+        //安卓默认版本
+        var apkversion = "CT-1.0.apk";
+        if (!urlData) {
+            mui.alert("获取app下载地址失败，请稍后重试！", "提示");
+        } else {
+            //OS = ios时
+            if (mui.os.ios || mui.os.ipad || mui.os.iphone) {
+                if (urlData.ios.iosId) {
+                    window.location.href = urlData.ios.iosId;
+                } else {
+                    mui.toast("获取app下载地址失败，请刷新重试!");
+                }
+                //OS = android时
+            } else if (mui.os.android) {
+                if (urlData.android.apkUrl) {
+                    window.location.href = apkurl + urlData.android.apkUrl;
+                }
+            } else {
+                //OS = PC或其他时
+                mui.confirm("未知设备", "提示", ["安卓下载", "苹果下载"], function (e) {
+                    if (e.index == 0) {
+                        if (urlData.android.apkUrl) {
+                            window.location.href = apkurl + urlData.android.apkUrl;
+                        } else {
+                            window.location.href = apkurl + apkversion;
+                        }
+                    } else {
+                        // if (urlData.iosId) {
+                        //     window.location.href = urlData.iosId;
+                        // } else {
+                            mui.toast("获取app下载地址失败，请使用ios设备打开!");
+                        // }
+                    }
+                });
+            }
+        }
+    }
+
+
+</script>
+
+</html>

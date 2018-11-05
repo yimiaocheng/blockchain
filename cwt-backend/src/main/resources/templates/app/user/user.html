@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 select-info">
+            <form id="appUser-form">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            用户手机号：<input type="text" name="userName"/>
+                        </li>
+                        <li>
+                            状态：
+                            <select name="status" th:with="type=${@dict.getType('app_user_status')}">
+                                <option value="">所有</option>
+                                <option th:each="e : ${type}" th:text="${e['dictLabel']}" th:value="${e['dictValue']}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            矿工等级：
+                            <select name="level" th:with="type=${@dict.getType('app_user_status')}">
+                                <option value="">所有</option>
+                                <option value="1">体验矿工</option>
+                                <option value="2">普通矿工</option>
+                                <option value="3">初级矿工</option>
+                                <option value="4">中级矿工</option>
+                                <option value="5">高级矿工</option>
+                                <option value="6">社区矿管</option>
+                            </select>
+                        </li>
+                        <li>
+                            用户邀请码：<input type="text" name="invitationCode"/>
+                        </li>
+                        <li class="select-time">
+                            <label>注册时间： </label>
+                            <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+                            <span>-</span>
+                            <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+
+        <div class="col-sm-12 select-info table-striped">
+            <table id="bootstrap-table" data-mobile-responsive="true"></table>
+        </div>
+    </div>
+</div>
+
+
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var editFlag = [[${@permission.hasPermi('app:appUser:edit')}]];
+    // var removeFlag = [[${@permission.hasPermi('app:appUser:remove')}]];
+    var statusObj = [[${@dict.getType('app_user_status')}]];
+    var prefix = ctx + "app/appUser"
+
+    $(function () {
+        var options = {
+            url: prefix + "/list",
+            createUrl: prefix + "/add",
+            updateUrl: prefix + "/edit/{id}",
+            removeUrl: prefix + "/remove",
+            modalName: "用户",
+            search: false,
+            showColumns:false,
+            columns: [
+                // {
+                //      checkbox: true
+                //  },
+                // {
+                //     field: 'id',
+                //     title: '',
+                //     visible: false,
+                //     // formatter: function (value, row, index) {
+                //     //     var herf = "<input name='id' th:field='"+ row.id +"' type='hidden'>";
+                //     //     return herf;
+                //     // }
+                // },
+                {
+                    field: 'userName',
+                    title: '用户手机号'
+                },
+                {
+                    field: 'invitationCode',
+                    title: '邀请码'
+                },
+                {
+                    field: 'nickName',
+                    title: '昵称'
+                },
+                {
+                    field: 'levelName',
+                    title: '等级'
+                },
+                // {
+                // 	field : '',
+                // 	title : '信任'
+                // },
+                // {
+                // 	field : '',
+                // 	title : '好评率'
+                // },
+                // {
+                // 	field : 'headImg',
+                // 	title : '头像'
+                // },
+                // {
+                //     field: 'inviterId',
+                //     title: '邀请人ID'
+                // },
+                // {
+                // 	field : 'invitationCode',
+                // 	title : '邀请码'
+                // },
+                {
+                    field: 'calculationForce',
+                    title: '智能算力',
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(row.calculationForce)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openCalculationForce(";
+                        herf+='"' + row.userName + '"';
+                        herf+=")' shiro:hasPermission='app:appUser:calculationForce'>";
+                        herf+= row.calculationForce + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    field: 'flowBalance',
+                    title: '数字资产',
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(row.flowBalance)) {
+                            return  "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openFlowBalance(";
+                        herf+='"' + row.userName + '"';
+                        herf+=")' shiro:hasPermission='app:appUser:flowBalance'>";
+                        herf+= row.flowBalance + "</a>";
+                        return herf;
+                    }
+                } ,
+                {
+                    field: 'gameCion',
+                    title: '游戏代币',
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openGameCion(";
+                        herf +='"' + row.userName + '"';
+                        herf +=")'>";
+                        herf += value + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    field: 'integral',
+                    title: '商城积分',
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openIntegral(";
+                        herf +='"' + row.userName + '"';
+                        herf +=")'>";
+                        herf += value + "</a>";
+                        return herf;
+                    }
+                } ,
+                {
+                    field : 'paymentMethodBankcard',
+                    title : '收款方式银行卡'
+                },
+                {
+                    field : 'paymentMethodZfb',
+                    title : '收款方式支付宝'
+                },
+                {
+                    field : 'paymentMethodWx',
+                    title : '收款方式微信'
+                },
+                {
+                    field : 'createTime',
+                    title : '注册时间',
+                    sortable: true
+                },
+                {
+                    field: 'status',
+                    title: '状态',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(statusObj, value);
+                    }
+                },
+                // {
+                // 	field : 'modifyTime',
+                // 	title : '修改时间'
+                // },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter:
+                        function (value, row, index) {
+                            var actions = [];
+                            actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="#" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                            actions.push('<a class="btn btn-primary btn-xs ' + editFlag + '" href="#" onclick="sendMsg(\'' + row.id + '\', \'' + row.userName + '\')"><i class="fa fa-edit"></i>发送消息</a> ');
+                            // actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="#" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                            return actions.join('');
+                        }
+                }
+            ]
+        };
+        $.table.init(options);
+    });
+</script>
+</body>
+<script type="text/javascript">
+    function openCalculationForce(userName) {
+        var url = ctx + "/app/record/calculatePower/index?userName=" + userName;
+        $.modal.open("该用户的智能算力详情", url);
+    }
+
+    function openFlowBalance(userName) {
+        var url = ctx + "app/record/balance/index?userName=" + userName;
+        $.modal.open("该用户的数字资产详情", url);
+    }
+
+    function openGameCion(userName) {
+        var url = ctx + "/app/gameAndIntegralRecord/gamePage?userName=" + userName;
+        $.modal.open("该用户的游戏代币记录", url);
+    }
+
+    function openIntegral(userName) {
+        var url = ctx + "app/gameAndIntegralRecord/integralPage?userName=" + userName;
+        $.modal.open("该用户的商城积分记录", url);
+    }
+
+    function sendMsg(_userId, _userName) {
+        var url = ctx + "app/acceptMessage/sendMsg?userId=" + _userId + "&userName=" + _userName;
+        $.modal.open("给该用户发送消息", url);
+    }
+</script>
+</html>

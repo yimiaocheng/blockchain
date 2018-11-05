@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.BalanceOrderMapper">
+    <resultMap id="BalanceOrderMap" type="com.cwt.domain.dto.balance.BalanceOrderDto">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="balanceConvertPercent" column="balance_convert_percent"/>
+        <result property="serverCharge" column="server_charge"/>
+        <result property="subsidy" column="subsidy"/>
+        <result property="orderTotalNum" column="order_total_num"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="limitNumMin" column="limit_num_min"/>
+        <result property="limitNumMax" column="limit_num_max"/>
+        <result property="payType" column="pay_type"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="orderStatus" column="order_status"/>
+    </resultMap>
+
+    <resultMap id="BalanceOrderUpdateMap" type="com.cwt.domain.dto.balance.BalanceOrderUpdateDto">
+        <id property="id" column="id"/>
+        <result property="orderTotalNum" column="order_total_num"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="limitNumMin" column="limit_num_min"/>
+        <result property="limitNumMax" column="limit_num_max"/>
+        <result property="payType" column="pay_type"/>
+    </resultMap>
+
+    <resultMap id="BalanceOrderByConditionMap" type="com.cwt.domain.dto.balance.GetBalanceOrderByConditionDto">
+        <id property="id" column="id"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="userId" column="user_id"/>
+        <result property="limitNumMin" column="limit_num_min"/>
+        <result property="limitNumMax" column="limit_num_max"/>
+        <result property="payType" column="pay_type"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="flowBalance" column="flow_balance"/>
+        <result property="headImg" column="head_img"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="orderStatus" column="order_status"/>
+        <result property="balanceConvertPercent" column="balance_convert_percent"/>
+        <result property="serverCharge" column="server_charge"/>
+        <result property="subsidy" column="subsidy"/>
+        <result property="orderTotalNum" column="order_total_num"/>
+        <result property="transationTotal" column="transation_total"/>
+        <result property="appealSuccess" column="appeal_success"/>
+        <result property="appealTotal" column="appeal_total"/>
+        <result property="appealFail" column="appeal_fail"/>
+    </resultMap>
+
+    <resultMap id="AllBalanceOrderMap" type="com.cwt.domain.dto.balance.BalanceOrderOfAllListDto">
+        <id property="id" column="id"/>
+        <result property="userName" column="user_name"/>
+        <result property="orderTotalNum" column="order_total_num"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="limitNumMin" column="limit_num_min"/>
+        <result property="limitNumMax" column="limit_num_max"/>
+        <result property="payType" column="pay_type"/>
+        <result property="orderType" column="order_type"/>
+        <result property="orderStatus" column="order_status"/>
+        <result property="serverCharge" column="server_charge"/>
+        <result property="subsidy" column="subsidy"/>
+        <result property="paymentMethodWx" column="payment_method_wx"/>
+        <result property="paymentMethodZfb" column="payment_method_zfb"/>
+        <result property="paymentMethodBankcard" column="payment_method_bankcard"/>
+        <result property="createTime" column="create_time"/>
+
+    </resultMap>
+
+    <select id="listByCondition" resultMap="BalanceOrderByConditionMap">
+        SELECT w.flow_balance,
+        u.head_img,
+        u.nick_name,
+        u.user_name,
+        uti.transation_total,
+        uti.appeal_fail,
+        uti.appeal_success,
+        uti.appeal_total,
+        b.*
+        from app_user u RIGHT JOIN app_user_transaction_info uti ON u.id = uti.user_id ,
+        app_balance_order b,app_wallet w
+        WHERE b.order_type = #{orderType}
+        <if test="payType != null">
+            AND b.pay_type = #{payType}
+        </if>
+        <if test="orderNum != null">
+            AND b.order_num &gt;= #{orderNum}
+        </if>
+        AND u.id = b.user_id
+        AND b.order_num &gt;= b.limit_num_min
+        AND b.order_status IN
+        <foreach collection="status" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND b.user_id &lt;&gt; #{userId}
+        AND w.user_id = #{userId}
+
+        ORDER BY ${orderByType}
+
+    </select>
+
+    <select id="listByReleaseRecords" resultMap="BalanceOrderByConditionMap">
+        SELECT
+        app_balance_order.user_id,
+        app_user.head_img,
+        app_user.nick_name,
+        app_balance_order.id,
+        app_balance_order.order_num,
+        app_balance_order.limit_num_min,
+        app_balance_order.limit_num_max,
+        app_balance_order.pay_type,
+        app_balance_order.order_type,
+        app_balance_order.create_time,
+        app_balance_order.modify_time,
+        app_balance_order.balance_convert_percent,
+        app_balance_order.server_charge,
+        app_balance_order.subsidy,
+        app_balance_order.order_total_num,
+        app_balance_order.order_status
+        FROM app_balance_order LEFT JOIN app_user ON app_balance_order.user_id = app_user.id
+        WHERE
+        app_balance_order.user_id = #{userId}
+        AND app_balance_order.order_status NOT IN
+        <foreach collection="orderStatus" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        <if test="fieldOrderStatus != null || fieldOrderStatus !='' ">
+            ${fieldOrderStatus}
+        </if>
+    </select>
+
+    <select id="selectById" resultMap="BalanceOrderMap">
+		SELECT * FROM app_balance_order WHERE id = #{id}
+	</select>
+
+    <select id="selectBalanceOrderUpdateById" resultMap="BalanceOrderUpdateMap">
+		SELECT id,order_total_num,order_num,limit_num_min,limit_num_max,pay_type FROM app_balance_order WHERE id = #{id}
+	</select>
+
+    <!--  后台查询所有的交易记录信息 -->
+    <select id="listForAll" resultMap="AllBalanceOrderMap"
+            parameterType="com.cwt.domain.dto.balance.BalanceOrderOfAllConditionDto">
+        SELECT
+        o.id,
+        o.order_total_num,
+        o.order_num,
+        o.server_charge,
+        o.subsidy,
+        o.limit_num_min,
+        o.limit_num_max,
+        o.pay_type,
+        u.user_name,
+        u.payment_method_wx,
+        u.payment_method_zfb,
+        u.payment_method_bankcard,
+        o.order_type,
+        o.order_status,
+        o.create_time
+        FROM
+        app_balance_order o
+        LEFT JOIN app_user u ON o.user_id = u.id
+        <where>
+            <if test="userName != null and userName != ''">
+                u.user_name = #{userName}
+            </if>
+            <if test="minNum != null">
+                and o.order_total_num &gt;= #{minNum}
+            </if>
+            <if test="maxNum != null">
+                and o.order_total_num &lt;= #{maxNum}
+            </if>
+            <if test="payType != null">
+                and o.pay_type = #{payType}
+            </if>
+            <if test="orderType != null">
+                and o.order_type = #{orderType}
+            </if>
+            <if test="orderStatus != null">
+                and o.order_status = #{orderStatus}
+            </if>
+            <if test="beginTime != null">
+                and o.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and o.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

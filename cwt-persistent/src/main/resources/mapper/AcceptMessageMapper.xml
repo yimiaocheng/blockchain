@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.AcceptMessageMapper">
+	<resultMap id="AcceptMessageMap" type="com.cwt.domain.dto.mySettings.AcceptMessageDto">
+		<id property="id" column="id"/>
+		<result property="msgContent" column="msg_content"/>
+		<result property="modifyTime" column="modify_time"/>
+		<result property="createTime" column="create_time"/>
+		<result property="userId" column="user_id"/>
+		<result property="status" column="status"/>
+	</resultMap>
+
+	<select id="selectByUserId" resultMap="AcceptMessageMap">
+		SELECT * FROM app_accept_message a
+		where a.user_id = #{userId}
+		order by a.status asc, a.create_time desc
+	</select>
+
+	<select id="countNoReadAcceptMessage" resultType="java.lang.Integer">
+		SELECT count(*) FROM app_accept_message a
+		where a.user_id = #{userId} and a.status = 0
+	</select>
+
+	<update id="readAcceptMessage" parameterType="String">
+		update app_accept_message
+		SET status = 1, modify_time = current_timestamp
+		where user_id = #{userId}
+	</update>
+
+	<!--************************************后台管理用************************************-->
+	<resultMap type="com.cwt.domain.dto.mySettings.AcceptMessageDto" id="AcceptMessageResult">
+		<result property="id"    column="id"    />
+		<result property="userId"    column="user_id"    />
+		<result property="userName"    column="user_name"    />
+		<result property="msgContent"    column="msg_content"    />
+		<result property="status"    column="status"    />
+		<result property="createTime"    column="create_time"    />
+		<result property="modifyTime"    column="modify_time"    />
+	</resultMap>
+
+	<sql id="selectAcceptMessageVo">
+        select a.id, a.user_id, a.msg_content, a.status, a.create_time, a.modify_time, u.user_name
+        from app_accept_message a left join app_user u on a.user_id = u.id
+    </sql>
+
+	<select id="selectAcceptMessageList" parameterType="com.cwt.domain.dto.mySettings.AcceptMessageDto" resultMap="AcceptMessageResult">
+		<include refid="selectAcceptMessageVo"/>
+		<where>
+			<!--<if test="id != null and id != ''"> and a.id = #{id}</if>-->
+			<!--<if test="userId != null and userId != ''"> and a.user_id = #{userId}</if>-->
+			<if test="msgContent != null and msgContent != ''"> and a.msg_content like CONCAT('%', #{msgContent}, '%'</if>
+			<if test="status != null and status != ''"> and a.status = #{status}</if>
+			<if test="beginTime != null">
+				and a.create_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null">
+				and a.create_time &lt;= #{endTime}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectAcceptMessageById" parameterType="String" resultMap="AcceptMessageResult">
+		<include refid="selectAcceptMessageVo"/>
+		where a.id = #{id}
+	</select>
+
+	<insert id="insertAcceptMessage" parameterType="com.cwt.domain.dto.mySettings.AcceptMessageDto">
+		insert into app_accept_message
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			user_id,
+			<if test="msgContent != null and msgContent != '' ">msg_content,</if>
+			status,
+			create_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			UUID(),
+			#{userId},
+			<if test="msgContent != null and msgContent != ''">#{msgContent},</if>
+			0,
+			current_timestamp
+		</trim>
+	</insert>
+
+	<update id="updateAcceptMessage" parameterType="com.cwt.domain.dto.mySettings.AcceptMessageDto">
+		update app_accept_message
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="userId != null  and userId != ''  ">user_id = #{userId},</if>
+			<if test="msgContent != null  and msgContent != ''  ">msg_content = #{msgContent},</if>
+			<if test="status != null  ">status = #{status},</if>
+			modify_time = current_timestamp
+		</trim>
+		where id = #{id}
+	</update>
+
+	<delete id="deleteAcceptMessageById" parameterType="String">
+        delete from app_accept_message where id = #{id}
+    </delete>
+
+	<delete id="deleteAcceptMessageByIds" parameterType="String">
+		delete from app_accept_message where id in
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+
+</mapper>

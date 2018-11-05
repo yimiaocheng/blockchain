@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.WalletMapper">
+    <resultMap id="WalletMap" type="com.cwt.domain.dto.wallet.WalletDto">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="flowBalance" column="flow_balance"/>
+        <result property="calculationForce" column="calculation_force"/>
+        <result property="gameCion" column="game_cion"/>
+        <result property="integral" column="integral"/>
+        <result property="version" column="version"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+
+    <select id="selectByUserId" resultMap="WalletMap">
+		SELECT * FROM app_wallet WHERE user_id = #{userId}
+	</select>
+
+    <select id="selectByWalletId" resultMap="WalletMap">
+		SELECT * FROM app_wallet WHERE id = #{walletId}
+	</select>
+
+    <select id="selectAllWallet" resultMap="WalletMap">
+		SELECT * FROM app_wallet
+	</select>
+
+    <select id="selectHeadCount" resultType="java.lang.Integer">
+		SELECT
+		COUNT(*)
+		FROM
+			app_wallet
+		WHERE
+			calculation_force &gt;= (select max(min_upgrade) from app_grade)
+	</select>
+
+    <update id="autoUpdateBalance">
+		UPDATE app_wallet w1
+		SET w1.flow_balance = w1.flow_balance + w1.calculation_force * (
+		SELECT
+		g.auto_transfer
+		FROM
+		app_grade g
+		WHERE
+		w1.calculation_force &gt;= g.min_upgrade
+		AND w1.calculation_force &lt; g.max_upgrade
+		LIMIT 0,1),
+		w1.calculation_force = w1.calculation_force - w1.calculation_force * (
+		SELECT
+		g.auto_transfer
+		FROM
+		app_grade g
+		WHERE
+		w1.calculation_force &gt;= g.min_upgrade
+		AND w1.calculation_force &lt; g.max_upgrade
+		LIMIT 0,1)
+	</update>
+
+    <update id="updateAward">
+		UPDATE app_wallet w1 SET w1.calculation_force = w1.calculation_force + #{force} *
+		(SELECT g.level_award FROM app_grade g WHERE w1.calculation_force &gt;= g.min_upgrade AND w1.calculation_force &lt; g.max_upgrade LIMIT 0,1) WHERE w1.user_id = #{userId}
+	</update>
+
+    <update id="updateWeightingAward">
+		UPDATE app_wallet w SET w.calculation_force = w.calculation_force + #{award}
+		WHERE w.calculation_force &gt;= (SELECT MAX(min_upgrade) FROM app_grade)
+	</update>
+
+    <update id="updateByWalletId" parameterType="com.cwt.domain.entity.Wallet">
+		UPDATE app_wallet SET flow_balance = #{flowBalance},calculation_force = #{calculationForce} WHERE id = #{id}
+	</update>
+
+    <update id="updateBalacneById">
+		UPDATE app_wallet
+		SET
+			flow_balance = flow_balance + #{autoTrans} ,
+			calculation_force = calculation_force - #{autoTrans},
+			version = version + 1,
+			modify_time = NOW()
+		WHERE
+			id = #{id}
+	</update>
+
+	<update id="handleTransForm" parameterType="com.cwt.domain.dto.wallet.transfor.TransForDto">
+		UPDATE app_wallet
+		SET
+			flow_balance = flow_balance + #{variationBalance},
+			calculation_force = calculation_force + #{variationForce},
+			integral = integral + #{variationIntegral},
+			game_cion = game_cion + #{variationGameCoin},
+			version = version + 1,
+			modify_time = NOW()
+		WHERE
+			id = #{id}
+	</update>
+
+	<update id="handleGameCoinTransForm" parameterType="com.cwt.domain.dto.wallet.transfor.TransForDto">
+		UPDATE app_wallet
+		SET
+			calculation_force = calculation_force + #{variationForce},
+			game_cion = game_cion + #{variationGameCoin},
+			version = version + 1,
+			modify_time = NOW()
+		WHERE
+			id = #{id}
+	</update>
+    <!--************************************后台管理用************************************-->
+    <update id="updateCalculationForceForBackend" parameterType="com.cwt.domain.dto.user.BackendUserDTO">
+        UPDATE app_wallet SET
+        <if test="cpArithmeticType == 1">calculation_force = calculation_force + #{cpAmount}</if>
+        <if test="cpArithmeticType == -1">calculation_force = calculation_force - #{cpAmount}</if>
+        WHERE user_id = #{id}
+    </update>
+    <update id="updateFlowBalanceForBackend" parameterType="com.cwt.domain.dto.user.BackendUserDTO">
+        UPDATE app_wallet SET
+        <if test="fbArithmeticType == 1">flow_balance = flow_balance + #{fbAmount}</if>
+        <if test="fbArithmeticType == -1">flow_balance = flow_balance - #{fbAmount}</if>
+        WHERE user_id = #{id}
+    </update>
+
+
+	<resultMap id="userBalanceResult" type="com.cwt.domain.entity.UserBalance">
+		<!--<id property="id" column="id"/>-->
+		<result property="userId" column="user_id"/>
+		<result property="flowBalance" column="flow_balance"/>
+		<result property="calculationForce" column="calculation_force"/>
+		<result property="gameCion" column="game_cion"/>
+		<result property="integral" column="integral"/>
+	</resultMap>
+
+	<select id="findUserBalance" resultMap="userBalanceResult">
+		SELECT * FROM app_wallet WHERE user_id = #{userId}
+	</select>
+
+	<update id="paymentByCT" >
+		UPDATE app_wallet SET
+			flow_balance = flow_balance - #{orderFee},
+			modify_time = #{modifyTime}
+		WHERE user_id=#{fromId}
+	</update>
+	<update id="paymentByintegral" >
+		UPDATE app_wallet SET
+			integral = integral - #{orderFee},
+		 	modify_time = #{modifyTime}
+		 WHERE user_id=#{fromId}
+	</update>
+
+	<update id="updateFlowBalance">
+		UPDATE app_wallet SET
+			flow_balance = flow_balance + #{orderFee},
+			modify_time = #{modifyTime}
+		WHERE user_id=#{userId}
+	</update>
+
+	<update id="updateIntegral">
+		UPDATE app_wallet SET
+		integral = integral + #{orderFee},
+		modify_time = #{modifyTime}
+		WHERE user_id=#{userId}
+	</update>
+	<update id="updateCalculationForce">
+		UPDATE app_wallet SET
+		calculation_force = calculation_force + #{force},
+		modify_time = #{modifyTime}
+		WHERE user_id=#{fromId}
+	</update>
+
+	<update id="updateFlowBalanceAndIntegral">
+		UPDATE app_wallet SET
+		flow_balance = flow_balance + #{award_ct},
+		integral = integral + #{award_integral},
+		modify_time = #{modifyTime}
+		WHERE user_id=#{userId}
+	</update>
+
+	<update id="updateBatchByList" parameterType="java.util.List">
+		update app_wallet
+			SET
+			flow_balance
+			= CASE
+				<foreach collection="list" item="item" index="index">
+					when id=#{item.id} then #{item.award_ct}
+				</foreach>
+			END,
+			integral
+			= CASE
+				<foreach collection="list" item="item" index="index">
+					when id=#{item.id} then #{item.award_integral}
+				</foreach>
+			END
+		where user_id in
+		<foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+			#{item.userId}
+		</foreach>
+
+	</update>
+
+
+</mapper>

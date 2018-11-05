@@ -1,0 +1,174 @@
+body,
+html {
+	background-color: #FFFFFF;
+}
+
+.app-content-header {
+	width: 100%;
+	height: 200px;
+	padding: 0px 0px;
+	background-color: #0177F0;
+	border-bottom: 105px solid #FFFFFF;
+}
+
+.app-content-header-body {
+	width: 80%;
+	margin: 0px 10%;
+	border-radius: 10px;
+	background-color: #131013;
+}
+
+.app-content-header-mine {
+	width: 100%;
+	background-color: #FFFFFF;
+	border-radius: 10px;
+	animation: slowpulse 1s infinite;
+	filter: drop-shadow(0 0 2px #0177F0) drop-shadow(0 0 4px #229DFF) drop-shadow(0 0 4px #229DFF);
+}
+
+.app-ethereum {
+	background: #0177F0;
+	text-align: center;
+}
+
+.app-ethereum a {
+	color: #FFFFFF;
+	font-size: 35px;
+	margin: 20px 0px;
+}
+
+.transfer-input-group {
+	padding: 20px 0px 0px 0px;
+	border-radius: 10px;
+}
+
+.transfer-input-group:before {
+	height: 0px;
+}
+
+.transfer-input-group:after {
+	height: 0px;
+}
+
+.transfer-input-group .transfer-input-row {
+	margin: 10px 0px;
+	height: 44px;
+}
+
+.transfer-input-group .transfer-input-row:after {
+	left: 10%;
+	width: 80%;
+}
+
+.transfer-input-group .transfer-input-row label {
+	width: 10%;
+	line-height: 50px;
+	padding: 0px;
+	margin: 0px 0px 0px 10%;
+	font-size: 20px;
+	color: #0177F0;
+	;
+}
+
+.transfer-input-group .transfer-input-row label~input {
+	height: 50px;
+	width: 70%;
+	padding: 0px;
+	font-size: 15px;
+	margin: 0px 10% 0px 0px;
+}
+
+.transfer-input-group .app-tel-code label~input {
+	width: 33%;
+	float: left;
+	margin: 0px 0px 0px 0px;
+}
+
+.app-content-header-mine .transfer-input-group .app-tel-code input~span {
+	position: relative;
+	left: 0px;
+	float: left;
+	width: 7%;
+}
+
+.transfer-input-group .app-tel-code .app-get-tel-code {
+	width: 30%;
+	float: right;
+	line-height: 50px;
+	margin: 0px 10% 0px 0px;
+	font-size: 12px;
+	text-align: center;
+}
+
+.transfer-input-group .app-tel-code .app-get-tel-code div {
+	background-color: #0177F0;
+	color: #FFFFFF;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	margin: 10px 0px 10px 10px;
+	border-radius: 15px;
+}
+
+.transfer-next-group {
+	padding: 0px 10% 45px 10%;
+}
+
+.transfer-next-group input {
+	width: 100%;
+	height: 44px;
+	font-size: 17px;
+	border: none;
+	color: #FFFFFF;
+	background-color: #007aff;
+}
+
+.transfer-input-group .app-register-agree {
+	margin-top: 40px;
+	height: 30px;
+}
+
+.transfer-input-group .app-register-agree:after {
+	height: 0px;
+}
+
+.transfer-input-group .app-register-agree input[type=radio] {
+	width: auto;
+	position: relative;
+	float: left;
+	left: 10%;
+	font-size: 17px;
+	margin: 1px 0px 0px 0px;
+}
+
+.transfer-input-group .app-register-agree input:before {
+	font-size: 17px;
+}
+
+.transfer-input-group .app-register-agree label {
+	position: relative;
+	float: left;
+	left: 35px;
+	height: 30px;
+	line-height: 30px;
+	width: auto;
+	padding: 0px 0px 5px 0px;
+}
+
+.transfer-input-group .app-register-agree label span {
+	font-size: 13px;
+}
+
+.transfer-input-group .app-register-agree label :last-child {
+	color: #007aff;
+}
+
+.download-tips{
+	font-size: 14px;
+	float: right;
+	padding: 14px 0px 5px 0px;
+}
+
+.download-tips :last-child{
+	color: #007aff;
+}

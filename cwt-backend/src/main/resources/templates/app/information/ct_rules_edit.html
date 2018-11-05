@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-information-edit" th:object="${ctRules}">
+
+            <div class="form-group">	
+                <label class="col-sm-3 control-label">资产兑换算力倍：</label>
+                <div class="col-sm-8">
+                    <input id="transRate" name="transRate" th:field="*{transRate}" class="form-control" type="text">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">资产兑换算力比：</label>
+                <div class="col-sm-8">
+                    <input id="transBalanceRate" name="transBalanceRate" th:field="*{transBalanceRate}" class="form-control" type="text">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">资产兑换积分比：</label>
+                <div class="col-sm-8">
+                    <input id="ctToIntegralRate" name="ctToIntegralRate" th:field="*{ctToIntegralRate}" class="form-control" type="text">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">资产兑游戏币比：</label>
+                <div class="col-sm-8">
+                    <input id="ctToGameCoinRate" name="ctToGameCoinRate" th:field="*{ctToGameCoinRate}" class="form-control" type="text">
+                </div>
+            </div>
+
+			<div class="form-group">
+				<div class="form-control-static col-sm-offset-9">
+					<button type="submit" class="btn btn-primary">提交</button>
+					<button onclick="$.modal.close()" class="btn btn-danger" type="button">关闭</button>
+				</div>
+			</div>
+		</form>
+    </div>
+    <div th:include="include::footer"></div>
+    <script type="text/javascript">
+		var prefix = ctx + "app/information";
+		$("#form-information-edit").validate({
+			rules:{
+                transRate:{
+					required:true,
+				},
+                transBalanceRate:{
+					required:true,
+				},
+                ctToIntegralRate:{
+					required:true,
+				},
+                ctToGameCoinRate:{
+					required:true,
+				}
+			},
+			submitHandler: function(form) {
+			    try{
+			        if(!/^\d$/.test($("#transRate").val())){
+                        $.modal.alert("资产兑换算力倍输入有误", "warning");
+                        return false;
+                    }
+
+
+			        if(isNotRateNum($("#transBalanceRate").val())){
+                        $.modal.alert("资产兑换算力比输入有误", "warning");
+                        return false;
+                    }
+                    var transBalanceRate = parseFloat($("#transBalanceRate").val());
+
+                    if(isNotRateNum($("#ctToIntegralRate").val())){
+                        $.modal.alert("资产兑换积分比输入有误", "warning");
+                        return false;
+                    }
+                    var ctToIntegralRate = parseFloat($("#ctToIntegralRate").val());
+
+                    if(isNotRateNum($("#ctToGameCoinRate").val())){
+                        $.modal.alert("资产兑游戏币比输入有误", "warning");
+                        return false;
+                    }
+                    var ctToGameCoinRate = parseFloat($("#ctToGameCoinRate").val());
+                    console.log("资产兑换算力比：" + transBalanceRate + "，资产兑换积分比：" + ctToIntegralRate + "，资产兑游戏币比：" + ctToGameCoinRate);
+                    if(transBalanceRate+ctToIntegralRate+ctToGameCoinRate != 1){
+                        $.modal.alert("资产兑换比例总和不为100%", "warning");
+                        return false;
+                    }
+
+                    $.modal.confirm("确定修改该配置？会导致系统变化，请谨慎操作", function() {
+                        $.operate.save(prefix + "/ctRulesEdit", $('#form-information-edit').serialize());
+                    });
+
+                }catch (e) {
+                    $.modal.alert("输入有误", "warning");
+                }
+
+			}
+		});
+
+		function isNotRateNum(_str) {
+            if(/^0\.\d+$/.test(_str)){
+                return false;
+            }else{
+                return true;
+            }
+        }
+	</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.AboutUsMapper">
+	<resultMap id="AboutUsMap" type="com.cwt.domain.dto.mySettings.AboutUsDto">
+		<id property="id" column="id"/>
+		<result property="modifyTime" column="modify_time"/>
+		<result property="createTime" column="create_time"/>
+		<result property="textContent" column="text_content"/>
+	</resultMap>
+
+	<select id="listAllAboutUs" resultMap="AboutUsMap">
+		SELECT * FROM app_about_us a
+		order by a.create_time desc
+	</select>
+
+	<!--************************************后台管理用************************************-->
+	<resultMap type="com.cwt.domain.dto.mySettings.AboutUsDto" id="AboutUsResult">
+		<result property="id"    column="id"    />
+		<result property="textContent"    column="text_content"    />
+		<result property="createTime"    column="create_time"    />
+		<result property="modifyTime"    column="modify_time"    />
+	</resultMap>
+
+	<sql id="selectAboutUsVo">
+        select id, text_content, create_time, modify_time from app_about_us
+    </sql>
+
+	<select id="selectAboutUsList" parameterType="com.cwt.domain.dto.mySettings.AboutUsDto" resultMap="AboutUsResult">
+		<include refid="selectAboutUsVo"/>
+		<where>
+			<if test="id != null and id != ''"> and id = #{id}</if>
+			<if test="textContent != null and textContent != ''"> and text_content = #{textContent}</if>
+		</where>
+	</select>
+
+	<select id="selectAboutUsById" parameterType="String" resultMap="AboutUsResult">
+		<include refid="selectAboutUsVo"/>
+		where id = #{id}
+	</select>
+
+	<insert id="insertAboutUs" parameterType="com.cwt.domain.dto.mySettings.AboutUsDto">
+		insert into app_about_us
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			<if test="textContent != null and textContent != '' ">text_content,</if>
+			create_time,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			UUID(),
+			<if test="textContent != null and textContent != ''">#{textContent},</if>
+			current_timestamp
+		</trim>
+	</insert>
+
+	<update id="updateAboutUs" parameterType="com.cwt.domain.dto.mySettings.AboutUsDto">
+		update app_about_us
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="textContent != null  and textContent != ''  ">text_content = #{textContent},</if>
+			modify_time = current_timestamp
+		</trim>
+		where id = #{id}
+	</update>
+
+	<delete id="deleteAboutUsById" parameterType="String">
+        delete from app_about_us where id = #{id}
+    </delete>
+
+	<delete id="deleteAboutUsByIds" parameterType="String">
+		delete from app_about_us where id in
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

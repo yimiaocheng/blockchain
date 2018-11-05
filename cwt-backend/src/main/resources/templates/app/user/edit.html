@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-appUser-edit" th:object="${appUser}">
+        <input id="id" name="id" th:field="*{id}" type="hidden">
+        <input id="calculationForce" name="calculationForce" th:field="*{calculationForce}" type="hidden">
+        <input id="flowBalance" name="flowBalance" th:field="*{flowBalance}" type="hidden">
+        <div class="form-group ">
+            <label class="col-sm-3 control-label">用户手机号：</label>
+            <div class="col-sm-8">
+                <input id="userName" name="userName" th:field="*{userName}" class="form-control" type="text" disabled="disabled">
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="col-sm-3 control-label">昵称：</label>
+            <div class="col-sm-8">
+                <input id="nickName" name="nickName" th:field="*{nickName}" class="form-control" type="text" disabled="disabled">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label"></label>
+            <div class="col-sm-8">
+                <br/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">修改状态：</label>
+            <div class="col-sm-8">
+                <select id="status"  class="form-control" name="status" th:value="*{status}"
+                        th:with="type=${@dict.getType('app_user_status')}">
+                    <option th:each="e : ${type}" th:text="${e['dictLabel']}" th:value="${e['dictValue']}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">智能算力修改：</label>
+            <div class="col-sm-8">
+                <select name="cpArithmeticType" id="cpArithmeticType" class="form-control">
+                    <option value="">修改类型</option>
+                    <option value="1">增加</option>
+                    <option value="-1">减少</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">修改数值：</label>
+            <div class="col-sm-8">
+                <input id="cpAmount" name="cpAmount" class="form-control" type="text" >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">数字资产修改：</label>
+            <div class="col-sm-8">
+                <select name="fbArithmeticType" id="fbArithmeticType" class="form-control">
+                    <option value="">修改类型</option>
+                    <option value="1">增加</option>
+                    <option value="-1">减少</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">修改数值：</label>
+            <div class="col-sm-8">
+                <input id="fbAmount" name="fbAmount" class="form-control" type="text" >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="form-control-static col-sm-offset-9">
+                <button type="submit" class="btn btn-primary">提交</button>
+                <button onclick="$.modal.close()" class="btn btn-danger" type="button">关闭</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div th:include="include::footer"></div>
+<script type="text/javascript">
+    var prefix = ctx + "app/appUser";
+    $("#form-appUser-edit").validate({
+        rules: {
+            xxxx: {
+                required: true,
+            },
+        },
+        submitHandler: function (form) {
+            //智能算力修改校验
+            var reg = /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/;
+            var cpArithmeticType = $("#cpArithmeticType").val();
+            var cpAmount = $("#cpAmount").val();
+            if(cpArithmeticType){
+                if(cpAmount){
+                    if(! reg.test(cpAmount)){
+                        $.modal.alert("若要修改智能算力，请输入正确的数值", "warning");
+                        return false;
+                    }else{
+                        if(cpArithmeticType == "-1"){
+                            var bool = (parseFloat($("#calculationForce").val()) - parseFloat(cpAmount)) < 0;
+                            if(bool){
+                                $.modal.alert("不能将智能算力减少为负数", "warning");
+                                return false;
+                            }
+                        }
+                    }
+                }else{
+                    $.modal.alert("若要修改智能算力，请输入数值", "warning");
+                    return false;
+                }
+            }else{
+                if(cpAmount){
+                    $.modal.alert("若要修改智能算力，请选择修改类型", "warning");
+                    return false;
+                }
+            }
+            //数字资产修改校验
+            var fbArithmeticType = $("#fbArithmeticType").val();
+            var fbAmount = $("#fbAmount").val();
+            if(fbArithmeticType){
+                if(fbAmount){
+                    if(! reg.test(fbAmount)){
+                        $.modal.alert("若要修改数字资产，请输入正确的数值", "warning");
+                        return false;
+                    }else{
+                        if(fbArithmeticType == "-1"){
+                            var bool = (parseFloat($("#flowBalance").val()) - parseFloat(fbAmount)) < 0;
+                            if(bool){
+                                $.modal.alert("不能将数字资产减少为负数", "warning");
+                                return false;
+                            }
+                        }
+                    }
+                }else{
+                    $.modal.alert("若要修改数字资产，请输入数值", "warning");
+                    return false;
+                }
+            }else{
+                if(fbAmount){
+                    $.modal.alert("若要修改数字资产，请选择修改类型", "warning");
+                    return false;
+                }
+            }
+
+            $.modal.confirm("确定修改该用户吗？", function() {
+                $.operate.save(prefix + "/edit", $('#form-appUser-edit').serialize());
+            });
+        }
+    });
+</script>
+</body>
+</html>

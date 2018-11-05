@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.WalletBalanceRecordMapper">
+    <resultMap id="WalletBalanceRecordMap" type="com.cwt.domain.dto.wallet.WalletBalanceRecordDto">
+        <id property="id" column="id"/>
+        <result property="eventId" column="event_id"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+        <result property="changeType" column="change_type"/>
+        <result property="optUserShowMsg" column="opt_user_show_msg"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="optUserId" column="opt_user_id"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+    </resultMap>
+
+    <resultMap id="GetBillMap" type="com.cwt.domain.dto.wallet.GetBillDto">
+        <result property="userName" column="user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="BalanceListMap" type="com.cwt.domain.dto.balance.BalanceRecordListDto">
+        <result property="targetUserName" column="target_user_name"/>
+        <result property="sourceUserName" column="source_user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="serviceCharge" column="service_charge"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+        <result property="subsidy" column="subsidy"/>
+        <result property="changeType" column="change_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="WalletBalanceTransferOutMap" type="com.cwt.domain.dto.wallet.WalletBalanceTransferOutDto">
+        <result property="userName" column="user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="serviceCharge" column="service_charge"/>
+        <result property="calculatePower" column="calculate_power"/>
+        <result property="changeType" column="change_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="WalletBalanceTransferInMap" type="com.cwt.domain.dto.wallet.WalletBalanceTransferInDto">
+        <result property="userName" column="user_name"/>
+        <result property="amount" column="amount"/>
+        <result property="serviceCharge" column="service_charge"/>
+        <result property="calculatePower" column="calculate_power"/>
+        <result property="changeType" column="change_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="BalanceRecordListAll" type="com.cwt.domain.dto.wallet.BalanceRecordListAllDto">
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+        <result property="changeType" column="change_type"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="arithmeticType" column="arithmetic_type"/>
+    </resultMap>
+
+    <insert id="savaAutoUpdateBalanceBill">
+		INSERT INTO app_wallet_balance_record
+		(id,target_user_id,opt_user_id,amount,arithmetic_type,change_type,create_time)
+		SELECT
+		 UUID(),w.user_id,w.user_id,w.calculation_force * g.auto_transfer amount,1,6,NOW()
+		FROM
+		 app_wallet w,app_grade g
+		WHERE
+		 w.calculation_force &gt;= g.min_upgrade AND w.calculation_force &lt; g.max_upgrade
+	</insert>
+
+    <select id="selectTransferBill" resultMap="WalletBalanceTransferOutMap">
+        SELECT
+        u.user_name,
+        r.amount,
+        r.service_charge,
+        r.change_type,
+        r.arithmetic_type,
+        r.create_time,
+        IFNULL(p.amount, 0) calculate_power
+        FROM
+        app_wallet_balance_record r
+        LEFT JOIN app_wallet_calculate_power_record p ON r.event_id = p.event_id
+        AND p.target_user_id = #{userId}
+        LEFT JOIN app_user u ON u.id = r.target_user_id
+        WHERE
+        r.opt_user_id = #{userId}
+        AND r.target_user_id != #{userId}
+        AND r.change_type IN
+        <foreach collection="changeType" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        order by r.create_time desc
+    </select>
+
+    <select id="selectCollectingBill" resultMap="WalletBalanceTransferInMap">
+        SELECT
+            u.user_name,
+            record.amount,
+            record.service_charge,
+            record.change_type,
+            IFNULL(p.amount, 0) calculate_power,
+            record.create_time
+        FROM
+            app_wallet_balance_record record
+        LEFT JOIN app_user u ON record.opt_user_id = u.id
+        LEFT JOIN app_wallet_calculate_power_record p ON record.id = p.event_id
+        WHERE
+            record.target_user_id = #{userId}
+        and record.opt_user_id != #{userId}
+        AND record.change_type IN
+        <foreach collection="changeType" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        order by record.create_time desc
+	</select>
+
+    <select id="selectTransBill" resultMap="GetBillMap">
+		SELECT
+			opt_user_show_msg as user_name,
+			amount,
+			create_time
+		FROM
+			app_wallet_balance_record
+		WHERE
+			target_user_id = #{userId}
+			AND arithmetic_type = -1
+			AND change_type = 1
+		GROUP BY create_time DESC
+	</select>
+
+    <select id="selectAutoUpdateBalanceBill" resultMap="GetBillMap">
+		SELECT
+			opt_user_show_msg as user_name,
+			amount,
+			create_time
+		FROM
+			app_wallet_balance_record
+		WHERE
+			target_user_id = #{userId}
+			AND arithmetic_type = 1
+			AND change_type = 6
+		GROUP BY create_time DESC
+	</select>
+
+    <select id="countByChangeTypeOfToday" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            app_wallet_balance_record r
+        WHERE
+            r.target_user_id = #{userId}
+        AND r.change_type = #{changeType} and TO_DAYS(r.create_time)  = TO_DAYS(NOW())
+    </select>
+
+
+    <!-- 后台接口 -->
+    <select id="listByCondition" resultMap="BalanceListMap"
+            parameterType="com.cwt.domain.dto.balance.BalanceRecordListConditionDto">
+        SELECT
+        u.user_name target_user_name,
+        t.opt_user_show_msg source_user_name,
+        t.arithmetic_type arithmetic_type,
+        t.amount * t.arithmetic_type amount,
+        t.service_charge,
+        t.subsidy,
+        t.change_type,
+        t.create_time
+        FROM
+        app_wallet_balance_record t
+        left join app_user u on t.target_user_id = u.id
+        <where>
+            <if test="telephone != null and telephone !=''">
+                u.user_name = #{telephone}
+            </if>
+            <if test="arithmeticType != null and arithmeticType != ''">
+                and t.arithmetic_type = #{arithmeticType}
+            </if>
+            <if test="typeLimit != null">
+                and t.change_type in
+                <foreach item="item" index="index" collection="typeLimit" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="changeType != null">
+                and t.change_type = #{changeType}
+            </if>
+            <if test="beginTime != null">
+                and t.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and t.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="listAll" resultMap="BalanceRecordListAll">
+        SELECT
+            t.target_user_id,
+            t.amount,
+            t.arithmetic_type,
+            t.create_time,
+            t.change_type
+        FROM
+            app_wallet_balance_record t
+        WHERE
+            t.target_user_id = #{userId}
+        ORDER BY t.create_time DESC
+    </select>
+
+
+    <resultMap id="centerAccountList" type="com.cwt.domain.dto.wallet.CenterAccountDto">
+        <result property="autoTransferCount" column="autoTransferCount"/>
+        <result property="backendRecharge" column="backendRecharge"/>
+    </resultMap>
+
+    <select id="centerAccountList" resultMap="centerAccountList" parameterType="com.cwt.domain.dto.balance.BalanceRecordListConditionDto">
+        SELECT
+            SUM(IF(wbr.change_type=#{TRANS},wbr.amount,0)) AS cpTrans,
+            SUM(IF(wbr.change_type=#{AUTO_TRANSFER},wbr.amount,0)) AS autoTransferCount,
+            SUM(IF(wbr.change_type=#{UPDATE_BACKEND},wbr.amount*wbr.arithmetic_type,0)) AS backendRecharge,
+            data_value as centerAccountTotal
+        FROM app_wallet_balance_record wbr, app_information  i
+        where
+            i.data_name = 'center_account'
+    </select>
+
+    <select id="centerAccountDetail" resultMap="centerAccountList" parameterType="com.cwt.domain.dto.balance.BalanceRecordListConditionDto">
+        SELECT
+        SUM(IF(wbr.change_type=#{TRANS},wbr.amount,0)) AS cpTrans,
+        SUM(IF(wbr.change_type=#{AUTO_TRANSFER},wbr.amount,0)) AS autoTransferCount,
+        SUM(IF(wbr.change_type=#{UPDATE_BACKEND},wbr.amount*wbr.arithmetic_type,0)) AS backendRecharge,
+            date_format(wbr.create_time, '%Y-%m-%d') dateTime
+        FROM app_wallet_balance_record wbr
+        <where>
+            <if test="beginTime != null">
+                and wbr.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and wbr.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        group by dateTime
+        order by wbr.create_time desc
+    </select>
+
+
+
+    <select id="nowCTAccountTotal" resultType="java.math.BigDecimal">
+        SELECT
+            sum(amount*arithmetic_type) nowAccountTotal
+        FROM
+            app_wallet_balance_record t
+        WHERE
+            change_type IN (#{TRANS}, #{AUTO_TRANSFER}, #{UPDATE_BACKEND})
+    </select>
+
+</mapper>

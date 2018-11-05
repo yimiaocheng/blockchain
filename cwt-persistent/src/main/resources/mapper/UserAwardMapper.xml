@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.UserAwardMapper">
+
+    <resultMap id="UserAwardResult" type="com.cwt.domain.entity.UserAward">
+        <id property="id" column="id"/>
+        <result property="userId" column="userId"/>
+        <result property="award_ct" column="award_ct"/>
+        <result property="award_integral" column="award_integral"/>
+        <result property="award_status" column="award_status"/>
+        <result property="award_type" column="award_type"/>
+        <result property="award_orderNo" column="award_orderNo"/>
+        <result property="award_remark" column="award_remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+        <update id="updateUserAwardStatus">
+            UPDATE app_user_award SET award_status=#{status},modify_time=#{modifyTime} WHERE userId=#{userId} AND award_orderNo=#{award_orderNo} AND award_type=#{awardType}
+        </update>
+
+
+    <select id="selectUserAwardByStatus" resultMap="UserAwardResult">
+        SELECT * FROM
+          app_user_award
+        WHERE award_status=#{status}
+        AND award_type
+        NOT IN (
+          #{awardType_weighted},#{awardType_sales}
+        )
+        ORDER BY create_time ASC
+    </select>
+
+    <update id="updateUserAwardStatusById">
+        UPDATE app_user_award SET
+          award_status=#{status},
+          modify_time=#{modifyTime}
+        WHERE id=#{id}
+    </update>
+
+    <select id="selectUserAward" resultMap="UserAwardResult">
+        SELECT * FROM
+          app_user_award
+        WHERE award_status=#{status}
+          AND award_type = #{awardType}
+        ORDER BY create_time ASC
+    </select>
+
+    <resultMap id="UserAwardListMap" type="com.cwt.domain.dto.store.UserAwardListPO">
+        <result property="telephone" column="telephone"/>
+        <result property="award_ct" column="award_ct"/>
+        <result property="award_integral" column="award_integral"/>
+        <result property="award_type" column="award_type"/>
+        <result property="award_remark" column="award_remark"/>
+        <result property="award_orderNo" column="award_orderNo"/>
+        <result property="award_status" column="award_status"/>
+        <result property="modify_time" column="modify_time"/>
+    </resultMap>
+
+    <select id="selectUserAwardList" resultMap="UserAwardListMap" parameterType="com.cwt.domain.dto.store.UserAwardDTO">
+        SELECT
+        u.user_name telephone,
+        t.award_ct,
+        t.award_integral,
+        t.award_type,
+        t.award_remark,
+        t.award_orderNo,
+        t.award_status,
+        t.modify_time
+        FROM
+        app_user_award t
+        left join app_user u on t.userId = u.id
+        <where>
+            <if test="telephone != null and telephone !=''">
+                u.user_name = #{telephone}
+            </if>
+            <if test="award_type != null and award_type != ''">
+                and t.award_type = #{award_type}
+            </if>
+            <if test="award_orderNo != null and award_orderNo != ''">
+                and t.award_orderNo = #{award_orderNo}
+            </if>
+            <if test="award_status != null and award_status != ''">
+                and t.award_status = #{award_status}
+            </if>
+            <if test="beginTime != null">
+                and t.modify_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and t.modify_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+
+
+</mapper>

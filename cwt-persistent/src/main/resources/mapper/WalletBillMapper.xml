@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.WalletBillMapper">
+	<resultMap id="WalletBillMap" type="com.cwt.domain.dto.wallet.WalletBillDto">
+		<id property="id" column="id"/>
+		<result property="userId" column="user_id"/>
+		<result property="walletId" column="wallet_id"/>
+		<result property="beUserId" column="be_user_id"/>
+		<result property="beWalletId" column="be_wallet_id"/>
+		<result property="amount" column="amount"/>
+		<result property="billType" column="bill_type"/>
+		<result property="createTime" column="create_time"/>
+	</resultMap>
+
+	<select id="selectByIdAndBillType" resultMap="WalletBillMap">
+		SELECT * FROM app_wallet_bill WHERE user_id = #{userId} AND bill_type = #{billType} ORDER BY create_time DESC
+	</select>
+
+	<select id="selectByBeIdAndBillType" resultMap="WalletBillMap">
+		SELECT * FROM app_wallet_bill WHERE be_user_id = #{beUserId} AND bill_type = #{billType}  ORDER BY create_time DESC
+	</select>
+
+	<select id="selectToday" resultType="java.lang.Double">
+		SELECT SUM(amount) FROM app_wallet_bill WHERE TO_DAYS( NOW( ) ) - TO_DAYS(create_time) &lt;= 1 AND bill_type = "trans"
+	</select>
+
+</mapper>

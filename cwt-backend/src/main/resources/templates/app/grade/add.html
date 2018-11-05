@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-grade-add">
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">矿工等级：</label>
+				<div class="col-sm-8">
+					<input id="level" name="level" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">矿工等级名：</label>
+				<div class="col-sm-8">
+					<input id="levelName" name="levelName" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">最小升级条件：</label>
+				<div class="col-sm-8">
+					<input id="minUpgrade" name="minUpgrade" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">最大升级条件：</label>
+				<div class="col-sm-8">
+					<input id="maxUpgrade" name="maxUpgrade" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">智能释放：</label>
+				<div class="col-sm-8">
+					<input id="autoTransfer" name="autoTransfer" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">等级增加奖励：</label>
+				<div class="col-sm-8">
+					<input id="levelAward" name="levelAward" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">太阳线代数：</label>
+				<div class="col-sm-8">
+					<input id="generation" name="generation" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">商城开店空间：</label>
+				<div class="col-sm-8">
+					<input id="shopSpace" name="shopSpace" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="form-control-static col-sm-offset-9">
+					<button type="submit" class="btn btn-primary">提交</button>
+					<button onclick="$.modal.close()" class="btn btn-danger" type="button">关闭</button>
+				</div>
+			</div>
+		</form>
+	</div>
+    <div th:include="include::footer"></div>
+    <script type="text/javascript">
+		var prefix = ctx + "app/grade"
+		$("#form-grade-add").validate({
+			rules:{
+				xxxx:{
+					required:true,
+				},
+			},
+			submitHandler: function(form) {
+				$.operate.save(prefix + "/add", $('#form-grade-add').serialize());
+			}
+		});
+	</script>
+</body>
+</html>

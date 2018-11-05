@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+	<div class="container-div">
+		<div class="row">
+			<div class="col-sm-12 select-info">
+				<form id="appUser-form">
+					<div class="select-list">
+						<ul>
+							<li>
+								消息内容：<input type="text" name="msgContent"/>
+							</li>
+							<li>
+								状态：
+								<select name="status">
+									<option value="">所有</option>
+									<option value="1">已读</option>
+									<option value="0">未读</option>
+								</select>
+							</li>
+							<li class="select-time">
+								<label>接收时间： </label>
+								<input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+								<span>-</span>
+								<input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+							</li>
+							<li>
+								<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+								<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+							</li>
+						</ul>
+					</div>
+				</form>
+			</div>
+
+			<div class="btn-group hidden-xs" id="toolbar" role="group">
+				<!--<a class="btn btn-outline btn-success btn-rounded" onclick="$.operate.add()" shiro:hasPermission="app:communityBulletin:add">-->
+					<!--<i class="fa fa-plus"></i> 新增-->
+				<!--</a>-->
+				<a class="btn btn-outline btn-danger btn-rounded" onclick="$.operate.removeAll()" shiro:hasPermission="app:communityBulletin:remove">
+					<i class="fa fa-trash-o"></i> 删除
+				</a>
+			</div>
+
+			<div class="col-sm-12 select-info table-striped">
+				<table id="bootstrap-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+	</div>
+
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        // var editFlag = [[${@permission.hasPermi('app:acceptMessage:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('app:acceptMessage:remove')}]];
+        var prefix = ctx + "app/acceptMessage"
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                modalName: "个人接受消息",
+                search: false,
+                showColumns:false,
+                columns: [
+                    {
+		            checkbox: true
+		        },
+				{
+					field : 'id',
+					title : '主键',
+                    visible: false,
+				},
+				{
+					field : 'userId', 
+					title : '接收人id',
+                    visible: false,
+				},
+				{
+					field : 'userName',
+					title : '接收用户'
+				},
+				{
+					field : 'msgContent', 
+					title : '消息内容',
+                    formatter: function (value, row, index) {
+                        var herf = "<a title='点击显示详情' style='font-weight: bold;' onclick='showDetail(";
+                        herf += '"' + index + '"';
+                        herf += ")' >";
+                        herf += value.substr(0, 20) + "......</a>";
+                        herf += "<div id='detail-" + index + "' class='hidden'><p>" + value + "<\P></div>";
+                        return herf;
+                    }
+				},
+				{
+					field : 'status', 
+					title : '消息状态',
+                    formatter: function(value, row, index) {
+                        var htmlStr = '';
+					    if(value == 0){
+                            htmlStr = '<span class="badge badge-warning">未读</span>';
+						}else{
+                            htmlStr = '<span class="badge badge-success">已读</span>';
+						}
+                        return htmlStr;
+                    }
+				},
+				{
+					field : 'createTime', 
+					title : '接收时间',
+                    sortable: true
+				},
+				// {
+				// 	field : 'modifyTime',
+				// 	title : '修改时间'
+				// },
+		        {
+		            title: '操作',
+		            align: 'center',
+		            formatter: function(value, row, index) {
+		            	var actions = [];
+		            	// actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="#" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="#" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+						return actions.join('');
+		            }
+		        }]
+            };
+            $.table.init(options);
+        });
+
+        function showDetail(index) {
+            layer.open({
+                type: 1,
+                area: [500 + 'px', 400 + 'px'],
+                fix: false,
+                //不固定
+                maxmin: true,
+                shade: 0.3,
+                title: "消息详情",
+                content: $("#detail-"+index).html(),
+                // 弹层外区域关闭
+                shadeClose: true
+            });
+        }
+    </script>
+</body>
+</html>

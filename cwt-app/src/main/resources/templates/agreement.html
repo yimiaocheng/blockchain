@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CT平台服务协议</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" type="text/css" href="lib/css/mui.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/css/app.css" />
+    <script type="text/javascript" src="lib/js/mui.min.js"></script>
+</head>
+
+<style type="text/css">
+    .mui-content {
+        padding-left: 10px;
+    }
+</style>
+
+<body>
+<header class="mui-bar mui-bar-nav">
+    <a class="mui-action-back mui-icon app-icon mui-pull-left"></a>
+    <h1 class="mui-title">CT平台服务协议</h1>
+</header>
+
+<div class="mui-content" id="mui-content">
+
+</div>
+</body>
+
+<script>
+    var tips = '<p style="position: fixed; top: 45%; text-align: center;  width: 100%; font-size: 20px;"><i class="mui-icon mui-icon-chatboxes"></i>网络异常，请稍后重试</p>';
+    var domain = document.domain;
+    var baseUrl = "http://"+domain;
+    mui.ajax(baseUrl + "/cwt/login/agreement", {
+        async: false,
+        dataType: 'json',
+        type: "post",
+        timeout: 10000,
+        success: function(returnData) {
+            if(returnData.code == "200") {
+                document.getElementById("mui-content").innerHTML = returnData.data.textContent;
+            }else{
+                document.getElementById("mui-content").innerHTML = tips;
+            }
+        },
+        error: function(xhr, type, errorThrown) {
+            document.getElementById("mui-content").innerHTML = tips;
+            mui.toast("网络异常，请检查网络状态");
+        }
+    });
+</script>
+
+</html>

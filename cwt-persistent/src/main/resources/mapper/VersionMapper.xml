@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.VersionMapper">
+
+    <resultMap type="com.cwt.domain.dto.mySettings.VersionDto" id="VersionResult">
+        <result property="id" column="id"/>
+        <result property="version" column="version"/>
+        <result property="apkUrl" column="apk_url"/>
+        <result property="iosId" column="ios_id"/>
+        <result property="remark" column="remark"/>
+        <result property="compel" column="compel"/>
+        <result property="systemType" column="system_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectVersionVo">
+        select id, version, apk_url, ios_id, remark, compel,system_type,create_time from app_version
+    </sql>
+
+    <select id="selectVersionList" parameterType="com.cwt.domain.dto.mySettings.VersionDto" resultMap="VersionResult">
+        <include refid="selectVersionVo"/>
+        <where>
+            <if test="id != null and id != ''">and id = #{id}</if>
+            <if test="version != null and version != ''">and version = #{version}</if>
+            <if test="apkUrl != null and apkUrl != ''">and apk_url = #{apkUrl}</if>
+            <if test="iosId != null and iosId != ''">and ios_id = #{iosId}</if>
+            <if test="remark != null and remark != ''">and remark = #{remark}</if>
+            <if test="compel != null and compel != ''">and compel = #{compel}</if>
+            <if test="systemType != null and systemType != '' ">and system_type = #{systemType}</if>
+            <if test="createTime != null and createTime != ''">and create_time = #{createTime}</if>
+        </where>
+        order by version desc
+    </select>
+
+    <!--lzf-->
+    <select id="selectNewestVersion" resultMap="VersionResult">
+        SELECT * FROM app_version ORDER BY create_time DESC LIMIT 0,1
+    </select>
+
+    <select id="selectNewestVersionV2" parameterType="String" resultMap="VersionResult">
+        SELECT * FROM app_version
+        WHERE system_type = #{systemType}
+        ORDER BY create_time DESC LIMIT 0,1
+    </select>
+
+    <select id="selectVersionById" parameterType="Integer" resultMap="VersionResult">
+        <include refid="selectVersionVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertVersion" parameterType="com.cwt.domain.dto.mySettings.VersionDto">
+        insert into app_version
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="version != null and version != '' ">version,</if>
+            <if test="apkUrl != null and apkUrl != '' ">apk_url,</if>
+            <if test="iosId != null and iosId != '' ">ios_id,</if>
+            <if test="remark != null and remark != '' ">remark,</if>
+            <if test="compel != null and compel != '' ">compel,</if>
+            <if test="systemType != null and systemType != '' ">system_type,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="version != null and version != ''">#{version},</if>
+            <if test="apkUrl != null and apkUrl != ''">#{apkUrl},</if>
+            <if test="iosId != null and iosId != ''">#{iosId},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="compel != null and compel != ''">#{compel},</if>
+            <if test="systemType != null and systemType != ''">#{systemType},</if>
+            current_timestamp
+        </trim>
+    </insert>
+
+    <update id="updateVersion" parameterType="com.cwt.domain.dto.mySettings.VersionDto">
+        update app_version
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="version != null  and version != ''  ">version = #{version},</if>
+            <if test="apkUrl != null  and apkUrl != ''  ">apk_url = #{apkUrl},</if>
+            <if test="iosId != null  and iosId != ''  ">ios_id = #{iosId},</if>
+            <if test="remark != null  and remark != ''  ">remark = #{remark},</if>
+            <if test="compel != null  and compel != ''  ">compel = #{compel},</if>
+            <if test="systemType != null and systemType != ''">system_type = #{systemType},</if>
+            <if test="createTime != null  ">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVersionById" parameterType="Integer">
+        delete from app_version where id = #{id}
+    </delete>
+
+    <delete id="deleteVersionByIds" parameterType="String">
+        delete from app_version where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

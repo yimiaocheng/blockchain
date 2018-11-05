@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+    <div class="container-div">
+
+		<div class="col-sm-12 select-info table-striped">
+			<table id="bootstrap-table" data-mobile-responsive="true"></table>
+		</div>
+    </div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('app:information:edit')}]];
+        var prefix = ctx + "app/information";
+
+        $(function() {
+            var options = {
+                url: prefix + "/selectCtRulesList",
+                // createUrl: prefix + "/add",
+                updateUrl: prefix + "/ctRulesEditPage",
+                // removeUrl: prefix + "/remove",
+                modalName: " 数字资产转换规则",
+                search: false,
+                showColumns:false,
+                columns: [
+				{
+                    field : 'transRate',
+                    title : '资产兑换算力倍'
+				},
+				{
+                    field : 'transBalanceRate',
+                    title : '资产兑换算力比'
+				},
+				{
+                    field : 'ctToIntegralRate',
+                    title : '资产兑换积分比'
+				},
+				{
+                    field : 'ctToGameCoinRate',
+                    title : '资产兑游戏币比'
+				},
+
+		        {
+		            title: '操作',
+		            align: 'center',
+		            formatter: function(value, row, index) {
+		            	var actions = [];
+		            	actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="#" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+						return actions.join('');
+		            }
+		        }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

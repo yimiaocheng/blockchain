@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table" data-mobile-responsive="true"></table>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "/app/balanceOrder";
+    $(function () {
+        var options = {
+            url: prefix + "/centerAccountList",
+            modalName: "中央账户资产收支统计",
+            search: false,
+            showColumns:false,
+            columns: [
+                {
+                    field: 'centerAccountTotal',
+                    // title: '发行总量'
+                    title: '发行资产总额'
+                },
+                {
+                    field: 'autoTransferCount',
+                    title: '释放红包总额',
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openDetail()'  shiro:hasPermission='app:order:balance:view'>";
+                        herf += value + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    field: 'backendRecharge',
+                    title: '后台充值总额',
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openDetail()'  shiro:hasPermission='app:order:balance:view'>";
+                        herf += value + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    field: 'cpTrans',
+                    // title: '兑换算力资产总额',
+                    title: '已兑资产总额',
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openDetail()'  shiro:hasPermission='app:order:balance:view'>";
+                        herf += value + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    // title: '现有资产总额',
+                    title: '未兑资产总额',
+                    formatter: function (value, row, index) {
+                        var total = parseInt(row.autoTransferCount*10000) +  parseInt(row.backendRecharge*10000) -  parseInt(row.cpTrans*10000);
+                        return total / 10000;
+                    }
+                },
+                {
+                    // title: '剩余发行',
+                    title: '尚未发行资产',
+                    formatter: function (value, row, index) {
+                        var surplus = parseInt(row.centerAccountTotal*10000) - ( parseInt(row.autoTransferCount*10000) +  parseInt(row.backendRecharge*10000) -  parseInt(row.cpTrans*10000)) ;
+                        return surplus / 10000;  //保留四位小数
+                    }
+                },
+                ]
+        };
+        $.table.init(options);
+    });
+
+    function openDetail() {
+        var url = ctx + "/app/balanceOrder/centerAccountDetail";
+        $.modal.open("中央账户资产收支明细", url);
+    }
+</script>
+</body>
+</html>

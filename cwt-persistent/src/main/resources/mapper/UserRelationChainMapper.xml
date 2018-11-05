@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.UserRelationChainMapper">
+    <resultMap id="UserRelationChainMap" type="com.cwt.domain.entity.UserRelationChain">
+        <id property="id" column="id"/>
+        <result property="relationChain" column="relation_chain"/>
+        <result property="treeDepth" column="tree_depth"/>
+        <result property="createTime" column="create_time"/>
+        <result property="pid" column="pid"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+    <insert id="initUserRelationChain" parameterType="java.lang.String">
+		INSERT INTO app_user_relation_chain
+		SELECT
+		UUID(), #{userId}, #{inviterId}, CONCAT(urc.relation_chain, ',', #{inviterId}), urc.tree_depth+1, NOW()
+		FROM
+		app_user_relation_chain urc
+		where
+		urc.user_id = #{inviterId}
+	</insert>
+
+    <select id="selectCountFriends" resultType="java.lang.Integer">
+		SELECT count(*)
+		FROM app_user_relation_chain c
+		WHERE FIND_IN_SET(#{userId}, c.relation_chain);
+	</select>
+
+	<select id="selectByUserId" resultMap="UserRelationChainMap">
+		select  * from app_user_relation_chain where user_id = #{userId}
+	</select>
+
+</mapper>

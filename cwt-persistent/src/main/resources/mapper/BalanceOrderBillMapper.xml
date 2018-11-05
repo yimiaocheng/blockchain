@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.BalanceOrderBillMapper">
+    <resultMap id="BalanceOrderBillMap" type="com.cwt.domain.dto.balance.BalanceOrderBillDto">
+        <id property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="orderUserId" column="order_user_id"/>
+        <result property="orderUserStatus" column="order_user_status"/>
+        <result property="optUserId" column="opt_user_id"/>
+        <result property="optUserStatus" column="opt_user_status"/>
+        <result property="orderType" column="order_type"/>
+        <result property="billStatus" column="bill_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="moneyAmount" column="money_amount"/>
+        <result property="amount" column="amount"/>
+        <result property="amountReal" column="amount_real"/>
+    </resultMap>
+
+    <resultMap id="GetBalanceOrderBillByConditionDto"
+               type="com.cwt.domain.dto.balance.GetBalanceOrderBillByConditionDto">
+        <id property="id" column="id"/>
+        <result property="headImg" column="head_img"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="optNickName" column="opt_nick_name"/>
+        <result property="optUserName" column="opt_user_name"/>
+        <result property="optHeadImg" column="opt_head_img"/>
+        <result property="limitNumMin" column="limit_num_min"/>
+        <result property="limitNumMax" column="limit_num_max"/>
+        <result property="orderId" column="order_id"/>
+        <result property="orderUserId" column="order_user_id"/>
+        <result property="orderUserStatus" column="order_user_status"/>
+        <result property="optUserId" column="opt_user_id"/>
+        <result property="optUserStatus" column="opt_user_status"/>
+        <result property="billStatus" column="bill_status"/>
+        <result property="moneyAmount" column="money_amount"/>
+        <result property="amount" column="amount"/>
+        <result property="amountReal" column="amount_real"/>
+        <result property="balanceConvertPercent" column="balance_convert_percent"/>
+        <result property="payType" column="pay_type"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <resultMap id="AllBalanceOrderBillMap" type="com.cwt.domain.dto.balance.BalanceOrderBillOfAllListDto">
+        <result property="orderUserName" column="order_user_name"/>
+        <result property="orderUserStatus" column="order_user_status"/>
+        <result property="optUserName" column="opt_user_name"/>
+        <result property="optUserStatus" column="opt_user_status"/>
+        <result property="moneyAmount" column="money_amount"/>
+        <result property="amount" column="amount"/>
+        <result property="amountReal" column="amount_real"/>
+        <result property="billStatus" column="bill_status"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="listByOrderTypeAndBillStatus" resultMap="GetBalanceOrderBillByConditionDto">
+        SELECT
+        u.user_name,
+        u.nick_name,
+        u.head_img,
+        u1.user_name as opt_user_name,
+        u1.nick_name as opt_nick_name,
+        u1.head_img as opt_head_img,
+        o.limit_num_min,
+        o.limit_num_max,
+        o.pay_type,
+        o.balance_convert_percent,
+        b.*
+        FROM
+        app_balance_order_bill b
+        LEFT JOIN app_user u ON b.order_user_id = u.id
+        LEFT JOIN app_user u1 ON b.opt_user_id = u1.id
+        LEFT JOIN app_balance_order o on o.id = b.order_id
+        WHERE
+        <choose>
+            <when test="billStatus == 1">
+                (b.bill_status = #{billStatus} OR b.bill_status = 2)
+            </when>
+            <otherwise>
+                b.bill_status = #{billStatus}
+            </otherwise>
+        </choose>
+
+        <if test="orderType != null">
+            AND b.order_type = #{orderType}
+        </if>
+
+        AND (b.opt_user_id = #{userId} OR b.order_user_id = #{userId})
+        ORDER BY b.modify_time DESC
+    </select>
+
+
+    <select id="listForAll" resultMap="AllBalanceOrderBillMap"
+            parameterType="com.cwt.domain.dto.balance.BalanceOrderBillOfAllConditionDto">
+        SELECT
+        u.user_name order_user_name,
+        opt.user_name opt_user_name,
+        bill.order_user_status,
+        bill.opt_user_status,
+        bill.money_amount,
+        bill.amount,
+        bill.amount_real,
+        bill.bill_status,
+        bill.order_type,
+        bill.create_time
+        FROM
+        app_balance_order_bill bill
+        LEFT JOIN app_user u ON bill.order_user_id = u.id
+        LEFT JOIN app_user opt ON bill.opt_user_id = opt.id
+        <where>
+            <if test="orderId != null and orderId != ''">
+                bill.order_id = #{orderId}
+            </if>
+            <if test="billId != null and billId != ''">
+                and bill.id = #{billId}
+            </if>
+            <if test="orderUserName != null and orderUserName != ''">
+                and u.user_name = #{orderUserName}
+            </if>
+            <if test="optUserName != null and optUserName != ''">
+                and opt.user_name = #{optUserName}
+            </if>
+            <if test="billStatus != null">
+                and bill.bill_status = #{billStatus}
+            </if>
+            <if test="beginTime != null">
+                and bill.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and bill.create_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="listByOrderId" resultMap="BalanceOrderBillMap">
+        SELECT * FROM app_balance_order_bill WHERE order_id = #{orderId}
+    </select>
+
+    <select id="countNoInStatusByOrderId" resultType="int">
+        SELECT COUNT(*) FROM app_balance_order_bill
+        WHERE order_id = #{orderId}
+        AND bill_status NOT IN
+        <foreach collection="status" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>

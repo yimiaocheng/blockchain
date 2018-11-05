@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+    <div class="container-div">
+		<div class="col-sm-12 select-info">
+			<form id="balance-form">
+				<div class="container-div">
+					<div class="select-list">
+						<ul>
+							<li>
+								手机号：<input type="text" name="telephone" style="width:200px;"/>
+							</li>
+							<li>
+								订单号：<input type="text" name="orderNo" style="width:200px;"/>
+							</li>
+							<li>
+								<input name="status" type="hidden" value="1,2">
+								支付状态：
+								<select name="status" style="width:200px;">
+									<option value="">不限</option>
+									<option th:value="1">待支付</option>
+									<option th:value="2">已支付</option>
+								</select>
+							</li>
+							<li class="select-time">
+								<label>创建时间： </label>
+								<input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+								<span>-</span>
+								<input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+							</li>
+							<li>
+								<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+								<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="col-sm-12 select-table table-striped">
+			<table id="bootstrap-table" data-mobile-responsive="true"></table>
+		</div>
+    </div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var prefix = ctx + "/app/record/store";
+		var userPayStatustAttr = [[${@dict.getType('app_user_pay_status')}]];
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                modalName: "支付信息记录",
+                search: false,
+                showColumns:false,
+                columns: [{
+		            checkbox: true
+		        },
+				{
+					field : 'telephone',
+					title : '用户手机号'
+				},
+				{
+					field : 'orderNo',
+					title : '商品订单号'
+				},
+				{
+                    field : 'fee_ct',
+                    title : '支付ct'
+                },
+				{
+                    field : 'fee_integral',
+                    title : '支付积分'
+				},
+                    {
+                        field : 'body',
+                        title : '商品描述'
+                    },
+                 {
+                    field : 'status',
+					title : '支付状态',
+                     formatter: function (value, row, index) {
+                         var actions = [];
+                         $.each(userPayStatustAttr, function(index, dict) {
+                             if (dict.dictValue == value) {
+                                 actions.push("<span class='badge badge-" + dict.listClass + "'>" + dict.dictLabel + "</span>");
+                                 return false;
+                             }
+                         });
+                         return actions.join('');
+                     }
+				 },
+				{
+					field : 'modify_time',
+					title : '支付时间',
+                    sortable: true
+				}]
+            };
+            $.table.init(options);
+            $.table.search();
+        });
+    </script>
+</body>
+</html>

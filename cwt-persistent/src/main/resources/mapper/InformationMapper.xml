@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.InformationMapper">
+	<resultMap id="InformationMap" type="com.cwt.domain.dto.information.InformationDto">
+		<id property="id" column="id"/>
+		<result property="dataValue" column="data_value"/>
+		<result property="dataName" column="data_name"/>
+		<result property="status" column="status"/>
+	</resultMap>
+
+	<select id="selectByDateName" resultMap="InformationMap">
+		SELECT * FROM app_information WHERE data_name = #{dateName}
+		 <if test="status != null">
+			 AND status = #{status}
+		 </if>
+	</select>
+
+	<select id="selectLikeDateName" resultMap="InformationMap">
+		SELECT * FROM app_information WHERE data_name LIKE concat(concat('%',#{dateName}),'%')
+	</select>
+
+
+	<!--************************************后台管理用************************************-->
+	<resultMap type="com.cwt.domain.entity.Information" id="InformationResult">
+		<result property="id"    column="id"    />
+		<result property="grouping"    column="grouping"    />
+		<result property="dataName"    column="data_name"    />
+		<result property="dataValue"    column="data_value"    />
+		<result property="labelText"    column="label_text"    />
+		<result property="status"    column="status"    />
+		<result property="createTime"    column="create_time"    />
+		<result property="modifyTime"    column="modify_time"    />
+	</resultMap>
+
+	<sql id="selectInformationVo">
+        select id, data_name, data_value, label_text, status, create_time, modify_time from app_information
+    </sql>
+
+	<select id="selectInformationList" parameterType="com.cwt.domain.entity.Information" resultMap="InformationResult">
+		<include refid="selectInformationVo"/>
+		where
+			grouping is null
+			<if test="id != null and id != ''"> and id = #{id}</if>
+			<if test="dataName != null and dataName != ''"> and data_name = #{dataName}</if>
+			<if test="dataValue != null and dataValue != ''"> and data_value = #{dataValue}</if>
+			<if test="labelText != null and labelText != ''"> and label_text = #{labelText}</if>
+			<if test="status != null and status != ''"> and status = #{status}</if>
+
+	</select>
+
+	<select id="selectCtRulesList" parameterType="com.cwt.domain.entity.Information" resultMap="InformationResult">
+		select data_name, data_value, label_text
+		from app_information
+		where grouping = #{grouping}
+	</select>
+
+	<select id="selectInformationById" parameterType="Integer" resultMap="InformationResult">
+		<include refid="selectInformationVo"/>
+		where id = #{id}
+	</select>
+
+	<insert id="insertInformation" parameterType="com.cwt.domain.entity.Information">
+		insert into app_information
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != '' ">id,</if>
+			<if test="dataName != null and dataName != '' ">data_name,</if>
+			<if test="dataValue != null and dataValue != '' ">data_value,</if>
+			<if test="labelText != null and labelText != '' ">label_text,</if>
+			<if test="status != null and status != '' ">status,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null and id != ''">#{id},</if>
+			<if test="dataName != null and dataName != ''">#{dataName},</if>
+			<if test="dataValue != null and dataValue != ''">#{dataValue},</if>
+			<if test="labelText != null and labelText != ''">#{labelText},</if>
+			<if test="status != null and status != ''">#{status},</if>
+		</trim>
+	</insert>
+
+	<update id="updateInformation" parameterType="com.cwt.domain.entity.Information">
+		update app_information
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="dataName != null  and dataName != ''  ">data_name = #{dataName},</if>
+			<if test="dataValue != null  and dataValue != ''  ">data_value = #{dataValue},</if>
+			<if test="labelText != null  and labelText != ''  ">label_text = #{labelText},</if>
+			<if test="status != null  and status != ''  ">status = #{status},</if>
+		</trim>
+		where id = #{id}
+	</update>
+
+	<update id="updateCtRulesByDataName" parameterType="com.cwt.domain.dto.information.InformationForCtRulesDTO">
+		update app_information
+		set data_value = #{dataValue}
+		where data_name = #{dataName}
+	</update>
+
+	<delete id="deleteInformationById" parameterType="Integer">
+        delete from app_information where id = #{id}
+    </delete>
+
+	<delete id="deleteInformationByIds" parameterType="String">
+		delete from app_information where id in
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

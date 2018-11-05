@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="col-sm-12 select-info">
+        <form id="balance-form">
+            <div class="container-div">
+                <div class="select-list">
+                    <ul>
+                        <li class="select-time">
+                            <label>时间： </label>
+                            <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+                            <span>-</span>
+                            <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table" data-mobile-responsive="true"></table>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "/app/balanceOrder";
+    $(function () {
+        var options = {
+            url: prefix + "/centerAccountDetailList",
+            modalName: "中央账户资产收支明细",
+            search: false,
+            showColumns:false,
+            columns: [
+                {
+                    field: 'autoTransferCount',
+                    title: '释放红包总额',
+                },
+                {
+                    field: 'backendRecharge',
+                    title: '后台充值总额'
+                },
+                {
+                    field: 'cpTrans',
+                    title: '已兑资产总额',
+                },
+                {
+                    title: '未兑资产总额',
+                    formatter: function (value, row, index) {
+                        var total = parseInt(row.autoTransferCount*10000) +  parseInt(row.backendRecharge*10000) -  parseInt(row.cpTrans*10000);
+                        return total / 10000;
+                    }
+                },
+                {
+                    field: 'dateTime',
+                    title: '时间',
+                    // sortable: true
+                    formatter: function (value, row, index) {
+                        return value.substr(0, 10);
+                    }
+                }
+                ]
+        };
+        $.table.init(options);
+    });
+
+</script>
+</body>
+</html>

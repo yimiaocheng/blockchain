@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.GradeMapper">
+    <resultMap id="GradeMap" type="com.cwt.domain.dto.grade.GradeDto">
+        <id property="uuid" column="s_uuid"/>
+        <result property="shopSpace" column="shop_space"/>
+        <result property="autoTransfer" column="auto_transfer"/>
+        <result property="minUpgrade" column="min_upgrade"/>
+        <result property="maxUpgrade" column="max_upgrade"/>
+        <result property="level" column="level"/>
+        <result property="levelName" column="level_name"/>
+        <result property="id" column="id"/>
+        <result property="levelAward" column="level_award"/>
+    </resultMap>
+
+    <select id="selectAllGrade" resultMap="GradeMap">
+		SELECT * FROM app_grade
+	</select>
+
+    <select id="selectByUserId" resultMap="GradeMap">
+		SELECT * FROM app_grade WHERE #{force} &gt;= min_upgrade AND #{force} &lt; max_upgrade LIMIT 0,1
+	</select>
+
+
+    <!--************************************后台管理用************************************-->
+    <resultMap type="com.cwt.domain.entity.Grade" id="GradeResult">
+        <result property="id" column="id"/>
+        <result property="level" column="level"/>
+        <result property="levelName" column="level_name"/>
+        <result property="minUpgrade" column="min_upgrade"/>
+        <result property="maxUpgrade" column="max_upgrade"/>
+        <result property="autoTransfer" column="auto_transfer"/>
+        <result property="levelAward" column="level_award"/>
+        <result property="generation" column="generation"/>
+        <result property="shopSpace" column="shop_space"/>
+    </resultMap>
+
+    <sql id="selectGradeVo">
+        select id, level, level_name, min_upgrade, max_upgrade, auto_transfer, level_award, generation, shop_space from app_grade
+    </sql>
+
+    <select id="selectGradeList" parameterType="com.cwt.domain.entity.Grade" resultMap="GradeResult">
+        <include refid="selectGradeVo"/>
+        <where>
+            <if test="id != null and id != ''">and id = #{id}</if>
+            <if test="level != null and level != ''">and level = #{level}</if>
+            <if test="levelName != null and levelName != ''">and level_name = #{levelName}</if>
+            <if test="minUpgrade != null ">and min_upgrade = #{minUpgrade}</if>
+            <if test="maxUpgrade != null ">and max_upgrade = #{maxUpgrade}</if>
+            <if test="autoTransfer != null ">and auto_transfer = #{autoTransfer}</if>
+            <if test="levelAward != null ">and level_award = #{levelAward}</if>
+            <if test="generation != null ">and generation = #{generation}</if>
+            <if test="shopSpace != null ">and shop_space = #{shopSpace}</if>
+        </where>
+    </select>
+
+    <select id="selectGradeById" parameterType="Integer" resultMap="GradeResult">
+        <include refid="selectGradeVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertGrade" parameterType="com.cwt.domain.entity.Grade">
+        insert into app_grade
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != '' ">id,</if>
+            <if test="level != null and level != '' ">level,</if>
+            <if test="levelName != null and levelName != '' ">level_name,</if>
+            <if test="minUpgrade != null  ">min_upgrade,</if>
+            <if test="maxUpgrade != null  ">max_upgrade,</if>
+            <if test="autoTransfer != null  ">auto_transfer,</if>
+            <if test="levelAward != null  ">level_award,</if>
+            <if test="generation != null  ">generation,</if>
+            <if test="shopSpace != null  ">shop_space,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">#{id},</if>
+            <if test="level != null and level != ''">#{level},</if>
+            <if test="levelName != null and levelName != ''">#{levelName},</if>
+            <if test="minUpgrade != null ">#{minUpgrade},</if>
+            <if test="maxUpgrade != null ">#{maxUpgrade},</if>
+            <if test="autoTransfer != null ">#{autoTransfer},</if>
+            <if test="levelAward != null ">#{levelAward},</if>
+            <if test="generation != null ">#{generation},</if>
+            <if test="shopSpace != null ">#{shopSpace},</if>
+        </trim>
+    </insert>
+
+    <update id="updateGrade" parameterType="com.cwt.domain.entity.Grade">
+        update app_grade
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="level != null  and level != ''  ">level = #{level},</if>
+            <if test="levelName != null  and levelName != ''  ">level_name = #{levelName},</if>
+            <if test="minUpgrade != null  ">min_upgrade = #{minUpgrade},</if>
+            <if test="maxUpgrade != null  ">max_upgrade = #{maxUpgrade},</if>
+            <if test="autoTransfer != null  ">auto_transfer = #{autoTransfer},</if>
+            <if test="levelAward != null  ">level_award = #{levelAward},</if>
+            <if test="generation != null  ">generation = #{generation},</if>
+            <if test="shopSpace != null  ">shop_space = #{shopSpace},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteGradeById" parameterType="Integer">
+        delete from app_grade where id = #{id}
+    </delete>
+
+    <delete id="deleteGradeByIds" parameterType="String">
+        delete from app_grade where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

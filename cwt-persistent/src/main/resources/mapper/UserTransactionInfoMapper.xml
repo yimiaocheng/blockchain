@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.UserTransactionInfoMapper">
+	<resultMap id="UserTransactionInfoMap" type="com.cwt.domain.dto.user.UserTransactionInfoDto">
+		<id property="id" column="id"/>
+		<result property="transationTotal" column="transation_total"/>
+		<result property="modifyTime" column="modify_time"/>
+		<result property="appealSuccess" column="appeal_success"/>
+		<result property="createTime" column="create_time"/>
+		<result property="appealTotal" column="appeal_total"/>
+		<result property="appealFail" column="appeal_fail"/>
+		<result property="userId" column="user_id"/>
+	</resultMap>
+
+	<select id="selectByUserId" resultMap="UserTransactionInfoMap">
+		SELECT * FROM app_user_transaction_info WHERE user_id = #{userId}
+	</select>
+
+</mapper>

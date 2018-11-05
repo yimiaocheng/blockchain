@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="col-sm-12 select-info">
+        <form id="balance-form">
+            <div class="container-div">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            手机号：<input type="text" name="userName"/>
+                        </li>
+                        <li>
+                            交易方式：
+                            <select name="payType"
+                                    th:with="type=${@dict.getType('app_balance_order_pay_type')}">
+                                <option value="">不限</option>
+                                <option th:each="e : ${type}" th:text="${e['dictLabel']}"
+                                        th:value="${e['dictValue']}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            订单类型：
+                            <select name="orderType">
+                                <option value="">不限</option>
+                                <option th:value="1">买单</option>
+                                <option th:value="-1">卖单</option>
+                            </select>
+                        </li>
+                        <li>
+                            订单状态：
+                            <select name="orderStatus" th:with="type=${@dict.getType('app_balance_order_status')}">
+                                <option value="">所有</option>
+                                <option th:each="e : ${type}" th:text="${e['dictLabel']}" th:value="${e['dictValue']}"></option>
+                            </select>
+                        </li>
+                        <li class="select-time">
+                            <label>创建时间： </label>
+                            <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+                            <span>-</span>
+                            <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i
+                                    class="fa fa-search"></i>&nbsp;搜索</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table" data-mobile-responsive="true"></table>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "/app/balanceOrder";
+    var payTypeArry = [[${@dict.getType('app_balance_order_pay_type')}]];//交易方式字典
+    var orderStatus = [[${@dict.getType('app_balance_order_status')}]];//发布订单状态
+    $(function () {
+        var options = {
+            url: prefix + "/list",
+            modalName: "资产交易列表",
+            search: false,
+            showColumns:false,
+            columns: [{
+                checkbox: true
+            },
+                {
+                    field: 'id',
+                    title: '交易id',
+                    formatter: function (value, row, index) {
+                        if ($.common.isEmpty(value)) {
+                            return "-";
+                        }
+                        var herf = "<a style='font-weight: bold;' onclick='openBillIndex(";
+                        herf+='"' + value + '"';
+                        herf+=")'  shiro:hasPermission='app:order:balance:view'>";
+                        herf+= value + "</a>";
+                        return herf;
+                    }
+                },
+                {
+                    field: 'userName',
+                    title: '发起人手机号'
+                },
+                {
+                    field: 'orderTotalNum',
+                    title: '订单总数'
+                },
+                {
+                    field: 'orderNum',
+                    title: '订单剩余数'
+                },
+                {
+                    field: 'limitNumMin',
+                    title: '每单成交限制',
+                    formatter: function (value, row, index) {
+                        return row.limitNumMin +"-"+row.limitNumMax;
+                    }
+                },
+                {
+                    field: 'serverCharge',
+                    title: '平台收取手续费',
+                    formatter: function (value, row, index) {
+                        return row.orderTotalNum * value;
+                    }
+                },
+                {
+                    field: 'subsidy',
+                    title: '买家补贴',
+                    formatter: function (value, row, index) {
+                        return row.orderTotalNum * value;
+                    }
+                },
+                {
+                    field: 'payType',
+                    title: '支付方式',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(payTypeArry, value);
+                    }
+                },
+                {
+                    field: 'payType',
+                    title: '支付账号信息',
+                    formatter: function (value, row, index) {
+                        if(value == 0){
+                            return row.paymentMethodWx;
+                        }else if(value == 1){
+                            return row.paymentMethodZfb;
+                        }else if(value == 2){
+                            return row.paymentMethodBankcard;
+                        }else{
+                            return "未知";
+                        }
+                    }
+                },
+                {
+                    field: 'orderType',
+                    title: '订单类型',
+                    formatter: function (value, row, index) {
+                        if(value == 1){
+                            return '<span class="badge badge-primary">买单</span>';
+                        }else if(value == -1){
+                            return '<span class="badge badge-danger">卖单</span>';
+                        }else{
+                            return '<span class="badge badge-default">未知</span>';
+                        }
+                    }
+                },
+                {
+                    field: 'orderStatus',
+                    title: '订单状态',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(orderStatus, value);
+                    }
+                },
+                {
+                    field: 'createTime',
+                    title: '时间',
+                    sortable: true
+                }]
+        };
+        $.table.init(options);
+    });
+
+    function openBillIndex(_id) {
+        var url = ctx + "/app/balanceOrder/billIndex?id=" + _id;
+        $.modal.open("该资产交易明细查询", url);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/blockchain.iml" filepath="$PROJECT_DIR$/blockchain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-app/cwt-app.iml" filepath="$PROJECT_DIR$/cwt-app/cwt-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-backend/cwt-backend.iml" filepath="$PROJECT_DIR$/cwt-backend/cwt-backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-common/cwt-common.iml" filepath="$PROJECT_DIR$/cwt-common/cwt-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-domain/cwt-domain.iml" filepath="$PROJECT_DIR$/cwt-domain/cwt-domain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-persistent/cwt-persistent.iml" filepath="$PROJECT_DIR$/cwt-persistent/cwt-persistent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cwt-service/cwt-service.iml" filepath="$PROJECT_DIR$/cwt-service/cwt-service.iml" />
+    </modules>
+  </component>
+</project>

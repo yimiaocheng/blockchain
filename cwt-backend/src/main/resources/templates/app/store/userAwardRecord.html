@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+    <div class="container-div">
+		<div class="col-sm-12 select-info">
+			<form id="balance-form">
+				<div class="container-div">
+					<div class="select-list">
+						<ul>
+							<li>
+								手机号：<input type="text" name="telephone" style="width:120px;"/>
+							</li>
+							<li>
+								订单号：<input type="text" name="award_orderNo" style="width:120px;"/>
+							</li>
+							<li>
+								奖金类型：<select name="award_type"
+										   th:with="type=${@dict.getType('app_user_award_type')}" style="width:120px;">
+								<option value="">所有</option>
+								<option th:each="e : ${type}" th:text="${e['dictLabel']}"
+										th:value="${e['dictValue']}"></option>
+							</select>
+							</li>
+							<li>
+								<input name="award_status" type="hidden" value="0,1">
+								奖金发放状态：
+								<select name="award_status" style="width:120px;">
+									<option value="">不限</option>
+									<option th:value="0">待发放</option>
+									<option th:value="1">已发放</option>
+								</select>
+							</li>
+							<li class="select-time">
+								<label>创建时间： </label>
+								<input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+								<span>-</span>
+								<input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+							</li>
+							<li>
+								<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+								<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="col-sm-12 select-table table-striped">
+			<table id="bootstrap-table" data-mobile-responsive="true"></table>
+		</div>
+    </div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var prefix = ctx + "/app/record/store";
+        var awardTypeAttr = [[${@dict.getType('app_user_award_type')}]];
+        var awardStatusAttr = [[${@dict.getType('app_award_status')}]];
+        $(function() {
+            var options = {
+                url: prefix + "/userAwardlist",
+                modalName: "奖金发放记录",
+                search: false,
+                showColumns:false,
+                columns: [{
+		            checkbox: true
+		        },
+				{
+					field : 'telephone',
+					title : '用户手机号'
+				},
+				{
+					field : 'award_orderNo',
+					title : '订单号'
+				},
+				{
+					field : 'award_ct',
+					title : '奖金金额ct'
+				},
+                {
+                    field : 'award_integral',
+                    title : '奖金金额积分'
+                 },
+                 {
+                     field : 'award_type',
+                     title : '奖金类型',
+                     formatter: function (value, row, index) {
+                         var actions = [];
+                         $.each(awardTypeAttr, function(index, dict) {
+                             if (dict.dictValue == value) {
+                                 actions.push("<span class='badge badge-" + dict.listClass + "'>" + dict.dictLabel + "</span>");
+                                 return false;
+                             }
+                         });
+                         return actions.join('');
+                     }
+                 },
+                    {
+                        field : 'award_status',
+                        title : '奖金状态',
+                        formatter: function (value, row, index) {
+                            var actions = [];
+                            $.each(awardStatusAttr, function(index, dict) {
+                                if (dict.dictValue == value) {
+                                    actions.push("<span class='badge badge-" + dict.listClass + "'>" + dict.dictLabel + "</span>");
+                                    return false;
+                                }
+                            });
+                            return actions.join('');
+                        }
+                    },
+                    {
+                        field : 'award_remark',
+                        title : '奖金说明'
+                    },
+				{
+					field : 'modify_time',
+					title : '发放时间',
+                    sortable: true
+				}
+				]
+            };
+            $.table.init(options);
+            $.table.search();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cwt.persistent.mapper.IntegralRecordMapper">
+	<resultMap id="IntegralRecordMap" type="com.cwt.domain.dto.integral.IntegralDTO">
+		<id property="id" column="id"/>
+		<result property="modifyTime" column="modify_time"/>
+		<result property="totalNum" column="total_num"/>
+		<result property="createTime" column="create_time"/>
+		<result property="changeType" column="change_type"/>
+		<result property="userId" column="user_id"/>
+		<result property="userMobile" column="user_name"/>
+		<result property="arithmeticType" column="arithmetic_type"/>
+	</resultMap>
+
+	<select id="selectIntegralList" parameterType="com.cwt.domain.dto.integral.IntegralDTO" resultMap="IntegralRecordMap">
+		select i.id, i.user_id, i.total_num, i.change_type, i.arithmetic_type, i.create_time, i.modify_time, u.user_name
+		from app_integral_record i left join app_user u on i.user_id = u.id
+		<where>
+			<!--<if test="id != null and id != ''"> and id = #{id}</if>-->
+			<!--<if test="userId != null and userId != ''"> and user_id = #{userId}</if>-->
+			<!--<if test="totalNum != null and totalNum != ''"> and total_num = #{totalNum}</if>-->
+			<if test="userMobile != null and userMobile != ''"> and u.user_name = #{userMobile}</if>
+			<if test="changeType != null and changeType != ''"> and change_type = #{changeType}</if>
+			<if test="arithmeticType != null and arithmeticType != ''"> and arithmetic_type = #{arithmeticType}</if>
+
+			<!--<if test="createTime != null and createTime != ''"> and create_time = #{createTime}</if>-->
+			<!--<if test="modifyTime != null and modifyTime != ''"> and modify_time = #{modifyTime}</if>-->
+		</where>
+	</select>
+
+</mapper>

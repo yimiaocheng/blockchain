@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="col-sm-12 select-info">
+        <form id="balance-form">
+            <div class="container-div">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            手机号：<input type="text" name="userMobile" style="width:200px;"/>
+                        </li>
+                        <li>
+                            增减：
+                            <select name="arithmeticType"
+                                    th:with="type=${@dict.getType('app_arithmetic_type')}" style="width:200px;">
+                                <option value="">不限</option>
+                                <option th:each="e : ${type}" th:text="${e['dictLabel']}"
+                                        th:value="${e['dictValue']}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            类型：<select name="changeType"
+                                       th:with="type=${@dict.getType('app_integral')}" style="width:200px;">
+                            <option value="">所有</option>
+                            <option th:each="e : ${type}" th:text="${e['dictLabel']}"
+                                    th:value="${e['dictValue']}"></option>
+                        </select>
+                        </li>
+                        <li class="select-time">
+                            <label>创建时间： </label>
+                            <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="beginTime"/>
+                            <span>-</span>
+                            <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="endTime"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table" data-mobile-responsive="true"></table>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "/app/gameAndIntegralRecord";
+    var changeTypeAttr = [[${@dict.getType('app_integral')}]];  //变动类型字典
+    var arithmeticTypeAttr = [[${@dict.getType('app_arithmetic_type')}]];  //变动类型字典
+    $(function () {
+        var options = {
+            url: prefix + "/integralList",
+            modalName: "商城积分变动记录",
+            search: false,
+            showColumns:false,
+            columns: [
+                {
+                    field : 'userMobile',
+                    title : '变动用户'
+                },
+                {
+                    field : 'totalNum',
+                    title : '变动数额',
+                    formatter: function(value, row, index) {
+                        return value;
+                        //return value * row.arithmeticType;
+                    }
+                },
+                {
+                     field : 'arithmeticType',
+                     title : '变动情况',
+                    formatter: function (value, row, index) {
+                        var actions = [];
+                        $.each(arithmeticTypeAttr, function(index, dict) {
+                            if (dict.dictValue == value) {
+                                actions.push("<span class='badge badge-" + dict.listClass + "'>" + dict.dictLabel + "</span>");
+                                return false;
+                            }
+                        });
+                        return actions.join('');
+                    }
+                 },
+                {
+                    field : 'changeType',
+                    title : '变动类型',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(changeTypeAttr, value);
+                    }
+                },
+                /*{
+                     field : 'createTime',
+                    title : '创建时间'
+                },*/
+                {
+                    field : 'modifyTime',
+                    title : '变动时间',
+                    sortable: true
+                }
+                ]
+        };
+        $.table.init(options);
+        $.table.search();
+    });
+</script>
+</body>
+</html>

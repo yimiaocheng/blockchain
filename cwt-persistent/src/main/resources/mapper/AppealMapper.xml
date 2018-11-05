@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cwt.persistent.mapper.AppealMapper">
+    <resultMap id="AppealMap" type="com.cwt.domain.entity.Appeal">
+        <id property="id" column="id"/>
+        <result property="appealExplain" column="appeal_explain"/>
+        <result property="userId" column="user_id"/>
+        <result property="balanceBillId" column="balance_bill_id"/>
+        <result property="appealFile" column="appeal_file"/>
+        <result property="status" column="status"/>
+        <result property="creatDatetime" column="creat_datetime"/>
+        <result property="modifyTime" column="modify_time"/>
+    </resultMap>
+
+    <resultMap id="AppealListMap" type="com.cwt.domain.dto.appeal.AppealListDto">
+        <id property="id" column="id"/>
+        <result property="appealExplain" column="appeal_explain"/>
+        <result property="userName" column="user_name"/>
+        <result property="balanceBillId" column="balance_bill_id"/>
+        <result property="appealFile" column="appeal_file"/>
+        <result property="status" column="status"/>
+        <result property="creatDatetime" column="creat_datetime"/>
+    </resultMap>
+
+    <select id="listAppealByCondition" resultMap="AppealListMap">
+        SELECT
+        appeal.id,
+        appeal.appeal_file,
+        appeal.appeal_explain,
+        appeal.balance_bill_id,
+        appeal.status,
+        u.user_name,
+        appeal.creat_datetime
+        FROM
+        app_appeal appeal
+        INNER JOIN app_user u ON u.id = appeal.user_id
+        <where>
+            <if test="userName != null and userName != ''">
+                u.user_name = #{userName}
+            </if>
+            <if test="status != null">
+                and appeal.status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and appeal.creat_datetime &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and appeal.creat_datetime &lt;= #{endTime}
+            </if>
+        </where>
+
+    </select>
+</mapper>

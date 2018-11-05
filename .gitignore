@@ -7,3 +7,23 @@
 *.iml
 out
 gen
+
+target
+
+# Eclipse Project files
+*/.settings/
+.classpath
+.mymetadata
+.project
+
+# Log Files
+*.log
+
+# Package Files #
+#*.jar
+*.war
+*.ear
+
+/bin
+
+*.class
